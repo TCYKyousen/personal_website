@@ -105,12 +105,11 @@ export default function ProfilePage() {
         <Image src="/background.jpg" alt="Background" fill className="object-cover opacity-30" priority />
       </div>
 
-      {/* 顶部导航栏 */}
-      <header className="relative z-10 container mx-auto px-4 pt-4">
-        <div className="flex justify-between items-center md:justify-end">
+      <div className="relative z-10 container mx-auto px-4 pt-4">
+        <div className="flex justify-between items-center lg:justify-end">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden px-4 py-2 bg-card/30 backdrop-blur-xl border border-border/50 rounded-none hover:bg-accent/50 transition-colors"
+            className="lg:hidden px-4 py-2 bg-card/30 backdrop-blur-xl border border-border/50 rounded-none hover:bg-accent/50 transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -121,13 +120,11 @@ export default function ProfilePage() {
             {language === "zh" ? "日本語" : "中文"}
           </button>
         </div>
-      </header>
+      </div>
 
-      {/* 主要内容区域 */}
-      <main className="relative z-10 container mx-auto px-4 py-4 flex-1 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-7xl mx-auto">
-          {/* 左列 - 个人信息 */}
-          <div className="flex flex-col items-start space-y-6 md:pr-8">
+      <div className="relative z-10 container mx-auto px-4 py-4 flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          <div className="flex flex-col items-start space-y-6 lg:pr-8">
             <div className="relative w-32 h-32 rounded-3xl overflow-hidden">
               <Image src="/avatar.jpg" alt="Avatar" fill className="object-cover" />
             </div>
@@ -159,8 +156,7 @@ export default function ProfilePage() {
             </a>
           </div>
 
-          {/* 右列 - 功能卡片 */}
-          <div className={`space-y-6 ${mobileMenuOpen ? "block" : "hidden md:block"}`}>
+          <div className={`space-y-6 ${mobileMenuOpen ? "block" : "hidden lg:block"}`}>
             <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl">
               <div className="text-center space-y-2">
                 <p className="text-muted-foreground text-sm" lang={language}>
@@ -228,12 +224,13 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* 常驻底栏 */}
-      <footer className="fixed bottom-0 left-0 right-0 z-50 bg-card/30 backdrop-blur-xl border-t border-border/50">
-        <div className="container mx-auto px-4 py-3">
-          <p className="text-center text-sm text-muted-foreground">{t.footer}</p>
+      <footer className="relative z-10 py-4 mt-8">
+        <div className="container mx-auto px-4">
+          <div className="bg-card/30 backdrop-blur-xl border-t border-border/50 py-4">
+            <p className="text-center text-sm text-muted-foreground">{t.footer}</p>
+          </div>
         </div>
       </footer>
     </div>
