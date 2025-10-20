@@ -1,15 +1,19 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import './globals.css'
+import type React from "react"
+import type { Metadata } from "next"
+import { Analytics } from "@vercel/analytics/next"
+import "./globals.css"
+import localFont from "next/font/local"
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const miSansLatin = localFont({
+  src: "../public/fonts/MiSans-Latin-VF.ttf",
+  variable: "--font-misans",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: "Kyousen's Personal Page",
+  description: "Personal profile dashboard",
+  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -18,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
+    <html lang="zh">
+      <body className={`${miSansLatin.variable} font-sans antialiased`}>
         {children}
         <Analytics />
       </body>
