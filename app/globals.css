@@ -81,28 +81,151 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+ 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
+}
 
-  /* Chinese text uses Microsoft Yahei as primary fallback */
-  [lang="zh"] {
-    font-family: var(--font-misans), "Microsoft Yahei", system-ui, -apple-system, sans-serif;
+@keyframes slide-out-to-left {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
   }
-
-  /* Japanese text uses Yu Gothic UI as primary fallback */
-  [lang="ja"] {
-    font-family: var(--font-misans), "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  to {
+    transform: translateX(-100%) scale(0.8);
+    opacity: 0;
   }
 }
 
-/* Add utility class for HarmonyOS Sans Black font */
-@layer utilities {
-  .font-harmonyos-black {
-    font-family: var(--font-harmonyos-black), sans-serif;
+@keyframes slide-out-to-right {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
   }
+  to {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.slide-out-to-left {
+  animation: slide-out-to-left 0.3s ease-in-out forwards;
+}
+
+.slide-out-to-right {
+  animation: slide-out-to-right 0.3s ease-in-out forwards;
+}
+
+.slide-in-from-right {
+  animation: slide-in-from-right 0.5s ease-out forwards;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 10s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Chinese text uses Microsoft Yahei as primary fallback */
+[lang="zh"] {
+  font-family: var(--font-misans), "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+
+/* Traditional Chinese text uses Microsoft JhengHei as primary fallback */
+[lang="zh-TW"] {
+  font-family: var(--font-misans), "Microsoft JhengHei", "PingFang TC", "Hiragino Sans TC", sans-serif;
+}
+
+/* Japanese text uses Yu Gothic UI as primary fallback */
+[lang="ja"] {
+  font-family: var(--font-misans), "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+}
+
+/* English text uses system font stack */
+[lang="en"] {
+  font-family: var(--font-misans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Add utility class for HarmonyOS Sans Black font */
+.font-harmonyos-black {
+  font-family: var(--font-harmonyos-black), sans-serif;
 }

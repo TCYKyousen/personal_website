@@ -1,37 +1,46 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Analytics } from "@vercel/analytics/next"
+"use client"
+
+import { ThemeProvider } from "@/components/theme-provider"
+import { useState, useEffect } from "react"
+import Image from "next/image"
 import "./globals.css"
-import localFont from "next/font/local"
 
-const miSansLatin = localFont({
-  src: "../public/fonts/MiSans-Latin-VF.ttf",
-  variable: "--font-misans",
-  display: "swap",
-})
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [backgroundImage, setBackgroundImage] = useState("/background.jpg")
 
-const harmonyOSBlack = localFont({
-  src: "../public/fonts/HarmonyOS-Sans-Black.ttf",
-  variable: "--font-harmonyos-black",
-  display: "swap",
-})
+  useEffect(() => {
+    const fetchBackground = async () => {
+      try {
+        const response = await fetch("https://api-images.kanochan.net/api.php?album=Genshin-Impact")
+        if (response.ok) {
+          setBackgroundImage(response.url)
+        }
+      } catch (error) {
+        console.error("[v0] Failed to fetch background:", error)
+      }
+    }
 
-export const metadata: Metadata = {
-  title: "Kyousen's Personal Page",
-  description: "Personal profile dashboard",
-  generator: "v0.app",
-}
+    fetchBackground()
+  }, [])
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
   return (
-    <html lang="zh">
-      <body className={`${miSansLatin.variable} ${harmonyOSBlack.variable} font-sans antialiased`}>
-        {children}
-        <Analytics />
+    <html lang="zh" suppressHydrationWarning>
+      <head />
+      <body>
+        <div className="fixed inset-0 z-0">
+          <Image
+            src={backgroundImage}
+            alt="Background"
+            fill
+            className="object-cover opacity-30"
+            priority
+          />
+        </div>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <div className="relative z-10">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )

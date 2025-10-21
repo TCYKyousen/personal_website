@@ -13,7 +13,7 @@ interface Hitokoto {
   from_who: string | null
 }
 
-type Language = "zh" | "ja"
+type Language = "zh" | "ja" | "en" | "zh-TW"
 
 const translations = {
   zh: {
@@ -28,8 +28,20 @@ const translations = {
       `${year} 年 ${month} 月 ${day} 日 星期${weekday}`,
     footer: "2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
   },
+  "zh-TW": {
+    developer: "DEVELOPER & DESIGNER",
+    greeting: "你好，我是镜芊，很高兴认识你！",
+    nightGreeting: "夜深了，今天过的怎么样？",
+    githubRecord: "这是我的",
+    record: "记录",
+    friendLinks: "友情链接",
+    weekdays: ["日", "一", "二", "三", "四", "五", "六"],
+    dateFormat: (year: number, month: number, day: number, weekday: string) =>
+      `${year} 年 ${month} 月 ${day} 日 星期${weekday}`,
+    footer: "2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
+  },
   ja: {
-    developer: "開発者 & デザイナー",
+    developer: "开発者 & デザイナー",
     greeting: "こんにちは、私は鏡芊です。よろしくお願いします！",
     nightGreeting: "夜が更けました、今日はどうでしたか？",
     githubRecord: "これは私の",
@@ -38,6 +50,18 @@ const translations = {
     weekdays: ["日", "月", "火", "水", "木", "金", "土"],
     dateFormat: (year: number, month: number, day: number, weekday: string) =>
       `${year}年${month}月${day}日 ${weekday}曜日`,
+    footer: "2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
+  },
+  en: {
+    developer: "DEVELOPER & DESIGNER",
+    greeting: "Hi, I'm Kyousen. Nice to meet you!",
+    nightGreeting: "It's getting late, how was your day?",
+    githubRecord: "Here's my",
+    record: "record",
+    friendLinks: "Friend Links",
+    weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    dateFormat: (year: number, month: number, day: number, weekday: string) =>
+      `${weekday}, ${month}/${day}/${year}`,
     footer: "2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
   },
 }
@@ -232,7 +256,7 @@ export default function ProfilePage() {
       <div className="relative z-10 container mx-auto px-8 lg:px-16 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
           <div className="flex flex-col items-start space-y-6 lg:pr-8">
-            <div className="relative w-32 h-32 rounded-3xl overflow-hidden">
+            <div className="relative w-32 h-32 rounded-none overflow-hidden">
               <Image src="/avatar.jpg" alt="Avatar" fill className="object-cover" />
             </div>
 
@@ -243,7 +267,7 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30">
+            <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-none">
               <code className="text-muted-foreground">print("Hello, World!")</code>
             </div>
 
@@ -263,14 +287,27 @@ export default function ProfilePage() {
             </a>
           </div>
 
-          <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl overflow-hidden">
               <div className="text-center space-y-2">
-                <p className="text-muted-foreground text-sm" lang={language}>
+                <div 
+                  className="text-muted-foreground text-sm" 
+                  lang={language}
+                  key={`date-${currentTime.toISOString()}`}
+                >
                   {formatDate(currentTime)}
-                </p>
-                <p className="text-5xl font-bold font-harmonyos-black tracking-wider">{formatTime(currentTime)}</p>
-                <p className="text-muted-foreground text-sm" lang={language}>
+                </div>
+                <div 
+                  className="text-4xl font-bold font-harmonyos-black tracking-wider bg-gradient-to-r from-primary/80 to-primary bg-clip-text text-transparent"
+                  key={`time-${currentTime.toISOString()}`}
+                >
+                  {formatTime(currentTime)}
+                </div>
+                <div 
+                  className="text-muted-foreground text-sm" 
+                  lang={language}
+                  key={`greeting-${currentTime.toISOString()}`}
+                >
                   {language === "ja" ? (
                     <>
                       <Ruby base="夜" text="よる" />が<Ruby base="更" text="ふ" />
@@ -281,43 +318,51 @@ export default function ProfilePage() {
                   ) : (
                     t.nightGreeting
                   )}
-                </p>
+                </div>
               </div>
             </Card>
 
             <Card
-              className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl relative overflow-hidden cursor-pointer transition-all duration-200 active:scale-95 hover:shadow-xl hover:bg-card/40"
+              className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:bg-card/40 group"
               onClick={(e) => {
                 const card = e.currentTarget
                 const rect = card.getBoundingClientRect()
                 const x = e.clientX - rect.left
                 const y = e.clientY - rect.top
 
+                const ripple = document.createElement('div')
+                ripple.style.position = 'absolute'
+                ripple.style.left = `${x}px`
+                ripple.style.top = `${y}px`
+                ripple.style.width = '5px'
+                ripple.style.height = '5px'
+                ripple.style.backgroundColor = 'currentColor'
+                ripple.style.borderRadius = '50%'
+                ripple.style.opacity = '0.3'
+                ripple.style.transform = 'translate(-50%, -50%)'
+                ripple.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                card.appendChild(ripple)
+
                 card.style.transformOrigin = `${x}px ${y}px`
-                card.style.transform = "scale(0.98)"
+                card.style.transform = 'scale(0.96)'
+
+                requestAnimationFrame(() => {
+                  ripple.style.width = '300px'
+                  ripple.style.height = '300px'
+                  ripple.style.opacity = '0'
+                })
 
                 setTimeout(() => {
-                  card.style.transform = ""
-                  router.push(
-                    `/hitokoto?data=${encodeURIComponent(
-                      JSON.stringify({
-                        ...hitokoto,
-                        uuid: Math.random().toString(36).substring(7),
-                        id: Date.now(),
-                        type: "a",
-                        creator: "unknown",
-                        creator_uid: 0,
-                        reviewer: 0,
-                        commit_from: "web",
-                        created_at: new Date().toISOString(),
-                        length: hitokoto.hitokoto.length,
-                      })
-                    )}`
-                  )
-                }, 150)
+                  ripple.remove()
+                  card.style.transform = ''
+                }, 300)
               }}
             >
-              <div className="text-center space-y-2 animate-in fade-in duration-500" key={hitokoto.hitokoto}>
+              <div 
+                className="text-center space-y-2 animate-in fade-in duration-500 group-hover:scale-105 transition-transform"
+                key={hitokoto.hitokoto}
+                style={{ transformOrigin: 'center' }}
+              >
                 <p className="text-lg text-balance">
                   "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                 </p>
@@ -354,9 +399,11 @@ export default function ProfilePage() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-none"
+                    className="block w-full h-[42px] text-center py-2 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-none overflow-hidden whitespace-nowrap"
                   >
-                    {language === "ja" ? link.nameJa : link.name}
+                    <div className="animate-marquee">
+                      {language === "ja" ? link.nameJa : link.name}
+                    </div>
                   </a>
                 ))}
               </div>
@@ -412,38 +459,33 @@ export default function ProfilePage() {
 
       <footer className="fixed bottom-0 left-0 right-0 z-20 bg-card/30 backdrop-blur-xl border-t border-border/50">
         <div className="container mx-auto px-8 lg:px-16 py-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-center text-sm text-muted-foreground">
-              2023-2025 Kyousen's Personal Page Co-Created by{" "}
-              <a
-                href="https://v0.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                v0.dev
-              </a>{" "}
-              &{" "}
-              <a
-                href="https://trae.ai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                TRAE.ai
-              </a>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground" lang={language}>
+              {t.footer}
             </p>
             <DropdownMenu>
-              <DropdownMenuTrigger className="px-4 py-2 bg-card/30 backdrop-blur-xl border border-border/50 rounded-none hover:bg-accent/50 transition-colors text-sm flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                {language === "zh" ? "中文" : "日本語"}
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-none bg-card/30 backdrop-blur-xl border-border/50 hover:bg-card/50 transition-colors">
+                  <Globe className="w-4 h-4" />
+                  <span className="text-sm">
+                    {language === "zh" ? "简体中文" : 
+                     language === "zh-TW" ? "繁體中文" :
+                     language === "ja" ? "日本語" : "English"}
+                  </span>
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-card/95 backdrop-blur-xl border-border/50 rounded-none">
-                <DropdownMenuItem onClick={() => setLanguage("zh")} className="cursor-pointer">
-                  中文
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setLanguage("zh")}>
+                  简体中文
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("ja")} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => setLanguage("zh-TW")}>
+                  繁體中文
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("ja")}>
                   日本語
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("en")}>
+                  English
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
