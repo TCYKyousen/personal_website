@@ -285,7 +285,38 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl relative overflow-hidden">
+            <Card
+              className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-none shadow-2xl relative overflow-hidden cursor-pointer transition-all duration-200 active:scale-95 hover:shadow-xl hover:bg-card/40"
+              onClick={(e) => {
+                const card = e.currentTarget
+                const rect = card.getBoundingClientRect()
+                const x = e.clientX - rect.left
+                const y = e.clientY - rect.top
+
+                card.style.transformOrigin = `${x}px ${y}px`
+                card.style.transform = "scale(0.98)"
+
+                setTimeout(() => {
+                  card.style.transform = ""
+                  router.push(
+                    `/hitokoto?data=${encodeURIComponent(
+                      JSON.stringify({
+                        ...hitokoto,
+                        uuid: Math.random().toString(36).substring(7),
+                        id: Date.now(),
+                        type: "a",
+                        creator: "unknown",
+                        creator_uid: 0,
+                        reviewer: 0,
+                        commit_from: "web",
+                        created_at: new Date().toISOString(),
+                        length: hitokoto.hitokoto.length,
+                      })
+                    )}`
+                  )
+                }, 150)
+              }}
+            >
               <div className="text-center space-y-2 animate-in fade-in duration-500" key={hitokoto.hitokoto}>
                 <p className="text-lg text-balance">
                   "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
