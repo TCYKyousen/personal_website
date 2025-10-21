@@ -10,6 +10,12 @@ const miSansLatin = localFont({
   display: "swap",
 })
 
+const harmonyOSBlack = localFont({
+  src: "../public/fonts/HarmonyOS-Sans-Black.ttf",
+  variable: "--font-harmonyos-black",
+  display: "swap",
+})
+
 export const metadata: Metadata = {
   title: "Kyousen's Personal Page",
   description: "Personal profile dashboard",
@@ -23,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh">
-      <body className={`${miSansLatin.variable} font-sans antialiased`}>
+      <body className={`${miSansLatin.variable} ${harmonyOSBlack.variable} font-sans antialiased`}>
         {children}
         <Analytics />
       </body>

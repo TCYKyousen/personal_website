@@ -41,6 +41,8 @@
 @theme inline {
   --font-sans: var(--font-misans), "Microsoft Yahei", "Yu Gothic UI", system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  /* Add HarmonyOS Sans Black font variable for time display */
+  --font-harmonyos-black: var(--font-harmonyos-black);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -95,5 +97,12 @@
   /* Japanese text uses Yu Gothic UI as primary fallback */
   [lang="ja"] {
     font-family: var(--font-misans), "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  }
+}
+
+/* Add utility class for HarmonyOS Sans Black font */
+@layer utilities {
+  .font-harmonyos-black {
+    font-family: var(--font-harmonyos-black), sans-serif;
   }
 }
