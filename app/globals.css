@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -35,14 +37,47 @@
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
   --radius: 0.625rem;
+  --font-misans: "MiSans Latin VF", sans-serif;
+  --font-harmonyos-black: "HarmonyOS Sans Black", sans-serif;
 }
 
-/* Updated font stack with MiSans Latin VF, Microsoft Yahei for Chinese, and Yu Gothic UI for Japanese */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
 @theme inline {
-  --font-sans: var(--font-misans), "Microsoft Yahei", "Yu Gothic UI", system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
-  /* Add HarmonyOS Sans Black font variable for time display */
-  --font-harmonyos-black: var(--font-harmonyos-black);
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -81,151 +116,68 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
- 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
-  }
- 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-  }
-}
- 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
   }
-}
 
-@keyframes slide-out-to-left {
-  from {
-    transform: translateX(0) scale(1);
-    opacity: 1;
+  * {
+    border-color: var(--border);
   }
-  to {
-    transform: translateX(-100%) scale(0.8);
-    opacity: 0;
-  }
-}
 
-@keyframes slide-out-to-right {
-  from {
-    transform: translateX(0) scale(1);
-    opacity: 1;
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-misans), "Microsoft Yahei", "Yu Gothic UI", system-ui, -apple-system, sans-serif;
   }
-  to {
-    transform: translateX(100%) scale(0.8);
-    opacity: 0;
+
+  [lang="zh"] {
+    font-family: var(--font-misans), "Microsoft Yahei", system-ui, -apple-system, sans-serif;
   }
-}
 
-@keyframes slide-in-from-right {
-  from {
-    transform: translateX(100%) scale(0.8);
-    opacity: 0;
+  [lang="ja"] {
+    font-family: var(--font-misans), "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
   }
-  to {
-    transform: translateX(0) scale(1);
-    opacity: 1;
+
+  [lang="zh-TW"] {
+    font-family: var(--font-misans), "Yu Gothic UI", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
   }
-}
 
-.slide-out-to-left {
-  animation: slide-out-to-left 0.3s ease-in-out forwards;
-}
-
-.slide-out-to-right {
-  animation: slide-out-to-right 0.3s ease-in-out forwards;
-}
-
-.slide-in-from-right {
-  animation: slide-in-from-right 0.5s ease-out forwards;
-}
-
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
   }
-  100% {
-    transform: translateX(-100%);
+
+  ::-webkit-scrollbar-track {
+    background: oklch(0.145 0 0);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.439 0 0);
+    border-radius: 5px;
+    border: 2px solid oklch(0.145 0 0);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.539 0 0);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.439 0 0) oklch(0.145 0 0);
   }
 }
 
-.animate-marquee {
-  display: inline-block;
-  white-space: nowrap;
-  animation: marquee 10s linear infinite;
-}
+@layer utilities {
+  .font-harmonyos-black {
+    font-family: var(--font-harmonyos-black), sans-serif;
+  }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-/* Chinese text uses Microsoft Yahei as primary fallback */
-[lang="zh"] {
-  font-family: var(--font-misans), "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
-}
-
-/* Traditional Chinese text uses Microsoft JhengHei as primary fallback */
-[lang="zh-TW"] {
-  font-family: var(--font-misans), "Microsoft JhengHei", "PingFang TC", "Hiragino Sans TC", sans-serif;
-}
-
-/* Japanese text uses Yu Gothic UI as primary fallback */
-[lang="ja"] {
-  font-family: var(--font-misans), "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
-}
-
-/* English text uses system font stack */
-[lang="en"] {
-  font-family: var(--font-misans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-/* Add utility class for HarmonyOS Sans Black font */
-.font-harmonyos-black {
-  font-family: var(--font-harmonyos-black), sans-serif;
+  .font-yugothic {
+    font-family: "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  }
 }
