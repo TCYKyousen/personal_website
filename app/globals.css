@@ -123,7 +123,9 @@
   body {
     @apply bg-background text-foreground;
   }
+}
 
+@layer base {
   * {
     border-color: var(--border);
   }

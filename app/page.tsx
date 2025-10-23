@@ -254,7 +254,7 @@ export default function ProfilePage() {
         </>
       ),
       nameTW: "智教聯盟",
-      nameEn: "Smart-Teach Alliance",
+      nameEn: "SmartTeachCN",
       url: "https://forum.smart-teach.cn/",
     },
     {
