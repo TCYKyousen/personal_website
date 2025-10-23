@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Image from "next/image"
-import { Globe } from "lucide-react"
+import { Globe, Heart } from "lucide-react"
 
 interface Hitokoto {
   hitokoto: string
@@ -18,6 +18,8 @@ const translations = {
   zh: {
     developer: "DEVELOPER & DESIGNER",
     greeting: "你好，我是镜芊，很高兴认识你！",
+    introduction:
+      "我目前是SmartTeachCN的成员之一，正在参与开发拾块云集CogniBlock，同时正在钻研CJK字体的简体中文字形相关增补工作",
     nightGreeting: "夜深了，今天过的怎么样？",
     githubRecord: "这是我的",
     record: "记录",
@@ -30,6 +32,8 @@ const translations = {
   ja: {
     developer: "開発者 & デザイナー",
     greeting: "こんにちは、私は鏡芊です。よろしくお願いします！",
+    introduction:
+      "私は現在、SmartTeachCNのメンバーの一人として、CogniBlockの開発に参加しており、同時にCJKフォントの簡体字字形に関する補完作業を研究しています",
     nightGreeting: "夜が更けました、今日はどうでしたか？",
     githubRecord: "これは私の",
     record: "記録",
@@ -42,6 +46,8 @@ const translations = {
   "zh-TW": {
     developer: "DEVELOPER & DESIGNER",
     greeting: "你好，我是鏡芊，很高興認識你！",
+    introduction:
+      "我目前是SmartTeachCN的成員之一，正在參與開發拾塊雲集CogniBlock，同時正在鑽研CJK字體的簡體中文字形相關增補工作",
     nightGreeting: "夜深了，今天過的怎麼樣？",
     githubRecord: "這是我的",
     record: "記錄",
@@ -54,6 +60,8 @@ const translations = {
   en: {
     developer: "DEVELOPER & DESIGNER",
     greeting: "Hello, I'm Kyousen, nice to meet you!",
+    introduction:
+      "I am currently a member of SmartTeachCN, participating in the development of CogniBlock, and researching supplementary work on Simplified Chinese character forms for CJK fonts",
     nightGreeting: "It's late, how was your day?",
     githubRecord: "This is my",
     record: "record",
@@ -145,6 +153,8 @@ export default function ProfilePage() {
   const [backgroundImage, setBackgroundImage] = useState("/background.jpg")
   const [hasKana, setHasKana] = useState(false)
   const [language, setLanguage] = useState<Language>("zh")
+  const [heartCount, setHeartCount] = useState(0)
+  const [isHeartAnimating, setIsHeartAnimating] = useState(false)
 
   const t = translations[language]
 
@@ -208,6 +218,13 @@ export default function ProfilePage() {
     }, 1000)
 
     return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const savedCount = localStorage.getItem("heartCount")
+    if (savedCount) {
+      setHeartCount(Number.parseInt(savedCount, 10))
+    }
   }, [])
 
   const formatDate = (date: Date) => {
@@ -280,6 +297,14 @@ export default function ProfilePage() {
     return link.name
   }
 
+  const handleHeartClick = () => {
+    const newCount = heartCount + 1
+    setHeartCount(newCount)
+    localStorage.setItem("heartCount", newCount.toString())
+    setIsHeartAnimating(true)
+    setTimeout(() => setIsHeartAnimating(false), 300)
+  }
+
   return (
     <>
       {isLoading && (
@@ -301,6 +326,18 @@ export default function ProfilePage() {
       <div
         className={`min-h-screen bg-background text-foreground relative overflow-x-hidden pb-20 transition-opacity duration-700 ${isLoading ? "opacity-0" : "opacity-100"}`}
       >
+        <div className="fixed top-8 right-8 z-30">
+          <button
+            onClick={handleHeartClick}
+            className={`flex items-center gap-2 px-4 py-2 bg-card/30 backdrop-blur-xl border border-border/50 rounded-lg hover:bg-accent/50 transition-all ${
+              isHeartAnimating ? "scale-125" : "scale-100"
+            }`}
+          >
+            <Heart className="w-5 h-5 fill-red-500 text-red-500" />
+            <span className="text-sm font-medium">{heartCount}</span>
+          </button>
+        </div>
+
         <div className="fixed inset-0 z-0">
           <Image
             src={backgroundImage || "/placeholder.svg"}
@@ -336,6 +373,10 @@ export default function ProfilePage() {
 
                 <p className="text-left text-foreground/90 max-w-xs mt-6" lang={language}>
                   {t.greeting}
+                </p>
+
+                <p className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed" lang={language}>
+                  {t.introduction}
                 </p>
 
                 <div className="flex items-center gap-4 mt-6">
