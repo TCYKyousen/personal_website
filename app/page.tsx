@@ -368,7 +368,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6 font-black">
-                  <code className="text-muted-foreground">print("Hello, World!")</code>
+                  <code className="text-muted-foreground font-mono text-base">print("Hello, World!")</code>
                 </div>
 
                 <p className="text-left text-foreground/90 max-w-xs mt-6 font-medium" lang={language}>
@@ -411,11 +411,11 @@ export default function ProfilePage() {
             >
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl">
                 <div className="text-center space-y-2">
-                  <p className="text-muted-foreground text-sm font-semibold" lang={language}>
+                  <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
                     {formatDate(currentTime)}
                   </p>
-                  <p className="text-5xl font-bold font-harmonyos-black tracking-wider">{formatTime(currentTime)}</p>
-                  <p className="text-muted-foreground text-sm font-light" lang={language}>
+                  <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">{formatTime(currentTime)}</p>
+                  <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
                     {language === "ja" ? (
                       <>
                         <Ruby base="夜" text="よる" />が<Ruby base="更" text="ふ" />
@@ -436,10 +436,10 @@ export default function ProfilePage() {
                   key={hitokoto.hitokoto}
                   lang={hasKana ? "ja" : language}
                 >
-                  <p className="text-lg text-balance font-black">
+                  <p className="text-lg text-balance font-black text-left">
                     "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                   </p>
-                  <p className="text-sm text-muted-foreground font-bold">
+                  <p className="text-sm text-muted-foreground font-bold text-right">
                     ——《{language === "ja" ? toJapaneseNewForm(hitokoto.from) : hitokoto.from}》
                     {hitokoto.from_who &&
                       ` · ${language === "ja" ? toJapaneseNewForm(hitokoto.from_who) : hitokoto.from_who}`}
@@ -454,7 +454,7 @@ export default function ProfilePage() {
               </Card>
 
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
-                <h2 className="text-xl mb-4 text-center font-black" lang={language}>
+                <h2 className="text-xl font-black mb-[-15px] text-center" lang={language}>
                   {language === "ja" ? (
                     <>
                       <Ruby base="友" text="ゆう" />
@@ -472,7 +472,7 @@ export default function ProfilePage() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-lg"
+                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-lg font-semibold"
                     >
                       {getFriendLinkName(link)}
                     </a>
@@ -482,7 +482,7 @@ export default function ProfilePage() {
 
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground" lang={language}>
+                  <p className="text-sm text-muted-foreground text-center" lang={language}>
                     {language === "ja" ? (
                       <>
                         これは
