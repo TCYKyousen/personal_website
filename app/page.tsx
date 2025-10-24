@@ -334,7 +334,7 @@ export default function ProfilePage() {
             }`}
           >
             <Heart className="w-5 h-5 fill-red-500 text-red-500" />
-            <span className="text-sm font-medium">{heartCount}</span>
+            <span className="text-sm font-black">{heartCount}</span>
           </button>
         </div>
 
@@ -367,11 +367,11 @@ export default function ProfilePage() {
                   </p>
                 </div>
 
-                <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6">
+                <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6 font-black">
                   <code className="text-muted-foreground">print("Hello, World!")</code>
                 </div>
 
-                <p className="text-left text-foreground/90 max-w-xs mt-6" lang={language}>
+                <p className="text-left text-foreground/90 max-w-xs mt-6 font-medium" lang={language}>
                   {t.greeting}
                 </p>
 
