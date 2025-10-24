@@ -367,7 +367,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
 
-                <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6 font-black">
+                <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 mt-6 font-black rounded-full">
                   <code className="text-muted-foreground font-mono text-base">print("Hello, World!")</code>
                 </div>
 
@@ -375,7 +375,7 @@ export default function ProfilePage() {
                   {t.greeting}
                 </p>
 
-                <p className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed opacity-[0.51]" lang={language}>
+                <p className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed opacity-[0.51] font-light" lang={language}>
                   {t.introduction}
                 </p>
 
@@ -414,7 +414,7 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
                     {formatDate(currentTime)}
                   </p>
-                  <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">{formatTime(currentTime)}</p>
+                  <p className="text-5xl font-harmonyos-black tracking-wider text-left font-black">{formatTime(currentTime)}</p>
                   <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
                     {language === "ja" ? (
                       <>
@@ -447,7 +447,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted/20">
                   <div
-                    className="h-full bg-primary transition-all duration-1000 ease-linear"
+                    className="h-full transition-all duration-1000 ease-linear bg-[rgba(75,75,75,1)]"
                     style={{ width: `${(countdown / 5) * 100}%` }}
                   />
                 </div>
@@ -472,7 +472,7 @@ export default function ProfilePage() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-lg font-semibold"
+                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 font-semibold rounded-full"
                     >
                       {getFriendLinkName(link)}
                     </a>
