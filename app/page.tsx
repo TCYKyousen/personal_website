@@ -361,8 +361,8 @@ export default function ProfilePage() {
 
               <div className={`transition-opacity duration-700 ${avatarAnimating ? "opacity-0" : "opacity-100"}`}>
                 <div className="text-left">
-                  <h1 className="text-4xl font-bold">{language === "ja" ? toJapaneseNewForm("镜芊") : "镜芊"}</h1>
-                  <p className="text-sm text-muted-foreground mt-2" lang={language}>
+                  <h1 className="text-4xl font-black">{language === "ja" ? toJapaneseNewForm("镜芊") : "镜芊"}</h1>
+                  <p className="text-sm text-muted-foreground mt-2 font-extralight" lang={language}>
                     {t.developer}
                   </p>
                 </div>
@@ -375,7 +375,7 @@ export default function ProfilePage() {
                   {t.greeting}
                 </p>
 
-                <p className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed" lang={language}>
+                <p className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed opacity-[0.51]" lang={language}>
                   {t.introduction}
                 </p>
 
@@ -411,11 +411,11 @@ export default function ProfilePage() {
             >
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl">
                 <div className="text-center space-y-2">
-                  <p className="text-muted-foreground text-sm" lang={language}>
+                  <p className="text-muted-foreground text-sm font-semibold" lang={language}>
                     {formatDate(currentTime)}
                   </p>
                   <p className="text-5xl font-bold font-harmonyos-black tracking-wider">{formatTime(currentTime)}</p>
-                  <p className="text-muted-foreground text-sm" lang={language}>
+                  <p className="text-muted-foreground text-sm font-light" lang={language}>
                     {language === "ja" ? (
                       <>
                         <Ruby base="夜" text="よる" />が<Ruby base="更" text="ふ" />
@@ -436,10 +436,10 @@ export default function ProfilePage() {
                   key={hitokoto.hitokoto}
                   lang={hasKana ? "ja" : language}
                 >
-                  <p className="text-lg text-balance">
+                  <p className="text-lg text-balance font-black">
                     "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground font-bold">
                     ——《{language === "ja" ? toJapaneseNewForm(hitokoto.from) : hitokoto.from}》
                     {hitokoto.from_who &&
                       ` · ${language === "ja" ? toJapaneseNewForm(hitokoto.from_who) : hitokoto.from_who}`}
@@ -454,7 +454,7 @@ export default function ProfilePage() {
               </Card>
 
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
-                <h2 className="text-xl font-bold mb-4 text-center" lang={language}>
+                <h2 className="text-xl mb-4 text-center font-black" lang={language}>
                   {language === "ja" ? (
                     <>
                       <Ruby base="友" text="ゆう" />
@@ -505,7 +505,7 @@ export default function ProfilePage() {
                           href="https://github.com/TCYKyousen"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary hover:underline"
+                          className="text-primary hover:underline font-bold"
                         >
                           GitHub
                         </a>{" "}
@@ -531,7 +531,7 @@ export default function ProfilePage() {
         <footer className="fixed bottom-0 left-0 right-0 z-20 bg-card/30 backdrop-blur-xl border-t border-border/50">
           <div className="container mx-auto px-8 lg:px-16 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground font-bold">
                 {t.footer.split("v0.dev")[0]}
                 <a
                   href="https://v0.dev"
@@ -554,7 +554,7 @@ export default function ProfilePage() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="px-4 py-2 bg-card/30 backdrop-blur-xl border border-border/50 rounded-lg hover:bg-accent/50 transition-colors text-sm flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  <span>
+                  <span className="font-black">
                     {languageFlags[language]} {languageNames[language]}
                   </span>
                 </DropdownMenuTrigger>
