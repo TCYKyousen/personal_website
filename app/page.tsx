@@ -371,7 +371,7 @@ export default function ProfilePage() {
                   <code className="text-muted-foreground font-mono text-base">print("Hello, World!")</code>
                 </div>
 
-                <p className="text-left text-foreground/90 max-w-xs mt-6 font-medium" lang={language}>
+                <p className="text-left text-foreground/90 max-w-xs mt-6 font-semibold" lang={language}>
                   {t.greeting}
                 </p>
 
@@ -436,10 +436,10 @@ export default function ProfilePage() {
                   key={hitokoto.hitokoto}
                   lang={hasKana ? "ja" : language}
                 >
-                  <p className="text-lg text-balance font-black text-left">
+                  <p className="text-lg text-balance font-black text-left font-serif">
                     "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                   </p>
-                  <p className="text-sm text-muted-foreground font-bold text-right">
+                  <p className="text-sm text-muted-foreground font-bold text-right font-serif">
                     ——《{language === "ja" ? toJapaneseNewForm(hitokoto.from) : hitokoto.from}》
                     {hitokoto.from_who &&
                       ` · ${language === "ja" ? toJapaneseNewForm(hitokoto.from_who) : hitokoto.from_who}`}
@@ -472,7 +472,7 @@ export default function ProfilePage() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 font-semibold rounded-full"
+                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-full font-semibold"
                     >
                       {getFriendLinkName(link)}
                     </a>
