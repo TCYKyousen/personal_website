@@ -414,7 +414,7 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
                     {formatDate(currentTime)}
                   </p>
-                  <p className="text-5xl font-harmonyos-black tracking-wider text-left font-black">{formatTime(currentTime)}</p>
+                  <p className="font-harmonyos-black tracking-wider text-left font-black text-5xl">{formatTime(currentTime)}</p>
                   <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
                     {language === "ja" ? (
                       <>
@@ -439,7 +439,7 @@ export default function ProfilePage() {
                   <p className="text-lg text-balance font-black text-left font-serif">
                     "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                   </p>
-                  <p className="text-sm text-muted-foreground font-bold text-right font-serif">
+                  <p className="text-sm text-muted-foreground text-right font-serif font-bold">
                     ——《{language === "ja" ? toJapaneseNewForm(hitokoto.from) : hitokoto.from}》
                     {hitokoto.from_who &&
                       ` · ${language === "ja" ? toJapaneseNewForm(hitokoto.from_who) : hitokoto.from_who}`}
