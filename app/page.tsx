@@ -4,7 +4,18 @@ import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Image from "next/image"
-import { Globe, Heart } from "lucide-react"
+import {
+  Globe,
+  Heart,
+  Sun,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  CloudLightning,
+  CloudDrizzle,
+  CloudFog,
+  Wind,
+} from "lucide-react"
 
 interface Hitokoto {
   hitokoto: string
@@ -28,6 +39,9 @@ const translations = {
     dateFormat: (year: number, month: number, day: number, weekday: string) =>
       `${year} 年 ${month} 月 ${day} 日 星期${weekday}`,
     footer: "© 2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
+    weather: "天气",
+    loading: "加载中...",
+    unknown: "未知",
   },
   ja: {
     developer: "開発者 & デザイナー",
@@ -42,6 +56,9 @@ const translations = {
     dateFormat: (year: number, month: number, day: number, weekday: string) =>
       `${year}年${month}月${day}日 ${weekday}曜日`,
     footer: "© 2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
+    weather: "天気",
+    loading: "読み込み中...",
+    unknown: "不明",
   },
   "zh-TW": {
     developer: "DEVELOPER & DESIGNER",
@@ -56,6 +73,9 @@ const translations = {
     dateFormat: (year: number, month: number, day: number, weekday: string) =>
       `${year} 年 ${month} 月 ${day} 日 星期${weekday}`,
     footer: "© 2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
+    weather: "天氣",
+    loading: "加載中...",
+    unknown: "未知",
   },
   en: {
     developer: "DEVELOPER & DESIGNER",
@@ -69,6 +89,9 @@ const translations = {
     weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     dateFormat: (year: number, month: number, day: number, weekday: string) => `${weekday}, ${month}/${day}/${year}`,
     footer: "© 2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
+    weather: "Weather",
+    loading: "Loading...",
+    unknown: "Unknown",
   },
 }
 
@@ -155,6 +178,7 @@ export default function ProfilePage() {
   const [language, setLanguage] = useState<Language>("zh")
   const [heartCount, setHeartCount] = useState(0)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
+  const [weatherData, setWeatherData] = useState<{ temp: number; code: number; city: string } | null>(null)
 
   const t = translations[language]
 
@@ -195,7 +219,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchHitokoto = async () => {
       try {
-        const response = await fetch("https://v1.hitokoto.cn/")
+        const response = await fetch("/api/hitokoto")
         const data = await response.json()
         setHitokoto(data)
         setCountdown(5)
@@ -203,6 +227,11 @@ export default function ProfilePage() {
         setHasKana(kanaRegex.test(data.hitokoto))
       } catch (error) {
         console.error("[v0] Failed to fetch hitokoto:", error)
+        setHitokoto({
+          hitokoto: "事物的发展是前进性与曲折性的统一",
+          from: "Jane",
+          from_who: null,
+        })
       }
     }
 
@@ -225,6 +254,38 @@ export default function ProfilePage() {
     if (savedCount) {
       setHeartCount(Number.parseInt(savedCount, 10))
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        // Try to get location from ipapi.co
+        const geoRes = await fetch("https://ipapi.co/json/")
+        if (!geoRes.ok) throw new Error("Geo fetch failed")
+        const geoData = await geoRes.json()
+        const { latitude, longitude, city } = geoData
+
+        // Get weather from Open-Meteo
+        const weatherRes = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+        )
+        if (!weatherRes.ok) throw new Error("Weather fetch failed")
+        const weatherData = await weatherRes.json()
+
+        setWeatherData({
+          temp: weatherData.current_weather.temperature,
+          code: weatherData.current_weather.weathercode,
+          city: city,
+        })
+      } catch (error) {
+        console.error("[v0] Weather fetch error:", error)
+      }
+    }
+
+    fetchWeather()
+    const interval = setInterval(fetchWeather, 1800000) // Refresh every 30 mins
+
+    return () => clearInterval(interval)
   }, [])
 
   const formatDate = (date: Date) => {
@@ -305,6 +366,18 @@ export default function ProfilePage() {
     setTimeout(() => setIsHeartAnimating(false), 300)
   }
 
+  const getWeatherIcon = (code: number) => {
+    if (code === 0 || code === 1) return <Sun className="w-8 h-8 text-yellow-500" />
+    if (code === 2 || code === 3) return <Cloud className="w-8 h-8 text-gray-400" />
+    if (code >= 45 && code <= 48) return <CloudFog className="w-8 h-8 text-gray-400" />
+    if (code >= 51 && code <= 67) return <CloudDrizzle className="w-8 h-8 text-blue-400" />
+    if (code >= 71 && code <= 77) return <CloudSnow className="w-8 h-8 text-white" />
+    if (code >= 80 && code <= 82) return <CloudRain className="w-8 h-8 text-blue-500" />
+    if (code >= 85 && code <= 86) return <CloudSnow className="w-8 h-8 text-white" />
+    if (code >= 95 && code <= 99) return <CloudLightning className="w-8 h-8 text-yellow-400" />
+    return <Sun className="w-8 h-8 text-yellow-500" />
+  }
+
   return (
     <>
       {isLoading && (
@@ -367,15 +440,18 @@ export default function ProfilePage() {
                   </p>
                 </div>
 
-                <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 mt-6 font-black rounded-full">
+                <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6 font-black">
                   <code className="text-muted-foreground font-mono text-base">print("Hello, World!")</code>
                 </div>
 
-                <p className="text-left text-foreground/90 max-w-xs mt-6 font-semibold" lang={language}>
+                <p className="text-left text-foreground/90 max-w-xs mt-6 font-medium" lang={language}>
                   {t.greeting}
                 </p>
 
-                <p className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed opacity-[0.51] font-light" lang={language}>
+                <p
+                  className="text-left text-foreground/80 text-sm max-w-xs mt-4 leading-relaxed opacity-[0.51]"
+                  lang={language}
+                >
                   {t.introduction}
                 </p>
 
@@ -414,7 +490,9 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
                     {formatDate(currentTime)}
                   </p>
-                  <p className="font-harmonyos-black tracking-wider text-left font-black text-5xl">{formatTime(currentTime)}</p>
+                  <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">
+                    {formatTime(currentTime)}
+                  </p>
                   <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
                     {language === "ja" ? (
                       <>
@@ -430,16 +508,39 @@ export default function ProfilePage() {
                 </div>
               </Card>
 
-              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl relative overflow-hidden">
+              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-muted-foreground text-sm font-semibold" lang={language}>
+                      {t.weather}
+                    </p>
+                    <p className="text-3xl font-bold font-harmonyos-black mt-2">
+                      {weatherData ? `${weatherData.temp}°C` : t.loading}
+                    </p>
+                  </div>
+                  {weatherData ? (
+                    getWeatherIcon(weatherData.code)
+                  ) : (
+                    <Wind className="w-8 h-8 text-gray-400 animate-pulse" />
+                  )}
+                </div>
+                <div className="text-right mt-4">
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {weatherData ? weatherData.city : t.unknown}
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2 relative overflow-hidden">
                 <div
                   className={`text-center space-y-2 animate-in fade-in duration-500 ${hasKana ? "font-yugothic" : ""}`}
                   key={hitokoto.hitokoto}
                   lang={hasKana ? "ja" : language}
                 >
-                  <p className="text-lg text-balance font-black text-left font-serif">
+                  <p className="text-lg text-balance font-black text-left">
                     "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                   </p>
-                  <p className="text-sm text-muted-foreground text-right font-serif font-bold">
+                  <p className="text-sm text-muted-foreground font-bold text-right">
                     ——《{language === "ja" ? toJapaneseNewForm(hitokoto.from) : hitokoto.from}》
                     {hitokoto.from_who &&
                       ` · ${language === "ja" ? toJapaneseNewForm(hitokoto.from_who) : hitokoto.from_who}`}
@@ -447,7 +548,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted/20">
                   <div
-                    className="h-full transition-all duration-1000 ease-linear bg-[rgba(75,75,75,1)]"
+                    className="h-full bg-primary transition-all duration-1000 ease-linear"
                     style={{ width: `${(countdown / 5) * 100}%` }}
                   />
                 </div>
@@ -472,7 +573,7 @@ export default function ProfilePage() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-full font-semibold"
+                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-lg font-semibold"
                     >
                       {getFriendLinkName(link)}
                     </a>
