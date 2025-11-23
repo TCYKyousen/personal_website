@@ -22,7 +22,6 @@ import {
   CloudLightning,
   CloudDrizzle,
   CloudFog,
-  Wind,
   Github,
 } from "lucide-react"
 
@@ -32,45 +31,9 @@ interface Hitokoto {
   from_who: string | null
 }
 
-type Language = "zh" | "ja" | "zh-TW" | "en"
+type Language = "ja" | "en" // Removed "zh" and "zh-TW"
 
 const translations = {
-  zh: {
-    developer: "DEVELOPER & DESIGNER",
-    greeting: "你好，我是Kyousen，很高兴认识你！",
-    introduction:
-      "我目前是SmartTeachCN的成员之一，正在参与开发拾块云集CogniBlock，同时正在钻研CJK字体的简体中文字形相关增补工作",
-    nightGreeting: "夜深了，今天过的怎么样？",
-    githubRecord: "这是我的",
-    record: "记录",
-    friendLinks: "友情链接",
-    weekdays: ["日", "一", "二", "三", "四", "五", "六"],
-    dateFormat: (year: number, month: number, day: number, weekday: string) =>
-      `${year} 年 ${month} 月 ${day} 日 星期${weekday}`,
-    footer: "© 2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
-    weather: "天气",
-    loading: "加载中...",
-    unknown: "未知",
-    worldClock: {
-      title: "世界时钟",
-      description: "查看全球各地的当前时间",
-      beijing: "北京",
-      tokyo: "东京",
-      london: "伦敦",
-      newYork: "纽约",
-      losAngeles: "洛杉矶",
-      sydney: "悉尼",
-    },
-    weatherDetail: {
-      title: "天气详情",
-      description: "详细天气信息",
-      current: "当前温度",
-      high: "最高温",
-      low: "最低温",
-      wind: "风速",
-      forecast: "未来7天",
-    },
-  },
   ja: {
     developer: "開発者 & デザイナー",
     greeting: "こんにちは、私はKyousenです。よろしくお願いします！",
@@ -105,42 +68,6 @@ const translations = {
       low: "最低気温",
       wind: "風速",
       forecast: "7日間予報",
-    },
-  },
-  "zh-TW": {
-    developer: "DEVELOPER & DESIGNER",
-    greeting: "你好，我是Kyousen，很高興認識你！",
-    introduction:
-      "我目前是SmartTeachCN的成員之一，正在參與開發拾塊雲集CogniBlock，同時正在鑽研CJK字體的簡體中文字形相關增補工作",
-    nightGreeting: "夜深了，今天過的怎麼樣？",
-    githubRecord: "這是我的",
-    record: "記錄",
-    friendLinks: "友情連結",
-    weekdays: ["日", "一", "二", "三", "四", "五", "六"],
-    dateFormat: (year: number, month: number, day: number, weekday: string) =>
-      `${year} 年 ${month} 月 ${day} 日 星期${weekday}`,
-    footer: "© 2023-2025 Kyousen's Personal Page Co-Created by v0.dev & TRAE.ai",
-    weather: "天氣",
-    loading: "加載中...",
-    unknown: "未知",
-    worldClock: {
-      title: "世界時鐘",
-      description: "查看全球各地的當前時間",
-      beijing: "北京",
-      tokyo: "東京",
-      london: "倫敦",
-      newYork: "紐約",
-      losAngeles: "洛杉磯",
-      sydney: "雪梨",
-    },
-    weatherDetail: {
-      title: "天氣詳情",
-      description: "詳細天氣資訊",
-      current: "當前溫度",
-      high: "最高溫",
-      low: "最低溫",
-      wind: "風速",
-      forecast: "未來7天",
     },
   },
   en: {
@@ -178,21 +105,17 @@ const translations = {
       forecast: "7-Day Forecast",
     },
   },
-}
+} // Removed zh and zh-TW translations
 
 const languageFlags = {
-  zh: "🇨🇳",
   ja: "🇯🇵",
-  "zh-TW": "🇹🇼",
   en: "🇺🇸",
-}
+} // Removed Chinese language flags
 
 const languageNames = {
-  zh: "简体中文",
   ja: "日本語",
-  "zh-TW": "繁體中文",
   en: "English",
-}
+} // Removed Chinese language names
 
 const Ruby = ({ base, text }: { base: string; text: string }) => (
   <ruby>
@@ -260,7 +183,8 @@ export default function ProfilePage() {
   const [countdown, setCountdown] = useState(5)
   const [backgroundImage, setBackgroundImage] = useState("/background.jpg")
   const [hasKana, setHasKana] = useState(false)
-  const [language, setLanguage] = useState<Language>("zh")
+  const [language, setLanguage] = useState<Language>("ja") // Default to Japanese
+
   const [heartCount, setHeartCount] = useState(0)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
   const [weatherData, setWeatherData] = useState<{ temp: number; code: number; city: string } | null>(null)
@@ -353,9 +277,7 @@ export default function ProfilePage() {
             async (position) => {
               const { latitude, longitude } = position.coords
 
-              // Get city name from reverse geocoding
-              const langCode =
-                language === "zh" ? "zh-CN" : language === "zh-TW" ? "zh-TW" : language === "ja" ? "ja" : "en"
+              const langCode = language === "ja" ? "ja" : "en"
               const geoRes = await fetch(
                 `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${langCode}`,
                 {
@@ -515,7 +437,6 @@ export default function ProfilePage() {
 
   const friendLinks = [
     {
-      name: "智教联盟",
       nameJa: (
         <>
           <Ruby base="智" text="ち" />
@@ -524,26 +445,20 @@ export default function ProfilePage() {
           <Ruby base="盟" text="めい" />
         </>
       ),
-      nameTW: "智教聯盟",
       nameEn: "SmartTeachCN",
       url: "https://forum.smart-teach.cn/",
     },
     {
-      name: "Class Widgets",
       nameJa: "Class Widgets",
-      nameTW: "Class Widgets",
       nameEn: "Class Widgets",
       url: "https://classwidgets.rinlit.cn/",
     },
     {
-      name: "ATCraft Network",
       nameJa: "ATCraft Network",
-      nameTW: "ATCraft Network",
       nameEn: "ATCraft Network",
       url: "https://atcraftmc.cn/",
     },
     {
-      name: "星轨旅行奇想社",
       nameJa: (
         <>
           <Ruby base="星" text="せい" />
@@ -555,18 +470,14 @@ export default function ProfilePage() {
           <Ruby base="社" text="しゃ" />
         </>
       ),
-      nameTW: "星軌旅行奇想社",
       nameEn: "Star Rail Travel Society",
       url: "https://next.tics.top/",
     },
-  ]
+  ] // Removed name, nameTW properties
 
   const getFriendLinkName = (link: (typeof friendLinks)[0]) => {
-    if (language === "ja") return link.nameJa
-    if (language === "zh-TW") return link.nameTW
-    if (language === "en") return link.nameEn
-    return link.name
-  }
+    return language === "ja" ? link.nameJa : link.nameEn
+  } // Simplified to only ja and en
 
   const handleHeartClick = () => {
     const newCount = heartCount + 1
@@ -691,154 +602,148 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div
-              className={`lg:w-2/3 space-y-6 transition-opacity duration-700 delay-500 ${
-                avatarAnimating ? "opacity-0" : "opacity-100"
-              }`}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Dialog open={isClockDialogOpen} onOpenChange={setIsClockDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-colors">
-                      <div className="text-center space-y-2">
-                        <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
-                          {formatDate(currentTime)}
-                        </p>
-                        <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">
-                          {formatTime(currentTime)}
-                        </p>
-                        <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
-                          {language === "ja" ? (
-                            <>
-                              <Ruby base="夜" text="よる" />が<Ruby base="更" text="ふ" />
-                              けました、
-                              <Ruby base="今日" text="きょう" />
-                              はどうでしたか？
-                            </>
-                          ) : (
-                            t.nightGreeting
-                          )}
-                        </p>
-                      </div>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold" lang={language}>
-                        {t.worldClock?.title || "世界时钟"}
-                      </DialogTitle>
-                      <DialogDescription lang={language}>
-                        {t.worldClock?.description || "查看全球各地的当前时间"}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      {worldClocks.map((clock) => (
-                        <Card key={clock.timezone} className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
-                          <p className="text-muted-foreground text-sm mb-1">{clock.city}</p>
-                          <p className="text-2xl font-bold font-harmonyos-black">{clock.time}</p>
-                        </Card>
-                      ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 auto-rows-fr">
+              {/* Time Card */}
+              <Dialog open={isClockDialogOpen} onOpenChange={setIsClockDialogOpen}>
+                <DialogTrigger asChild>
+                  <Card className="p-6 bg-card/30 backdrop-blur-xl border-border/50 rounded-lg hover:bg-accent/50 transition-all cursor-pointer h-full min-h-[180px] flex flex-col justify-center">
+                    <div className="text-sm text-muted-foreground mb-2">{formatDate(currentTime)}</div>
+                    <div className="text-5xl font-harmonyos-black mb-4">{formatTime(currentTime)}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {currentTime.getHours() >= 22 || currentTime.getHours() < 6 ? t.nightGreeting : t.greeting}
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold" lang={language}>
+                      {t.worldClock?.title || "世界时钟"}
+                    </DialogTitle>
+                    <DialogDescription lang={language}>
+                      {t.worldClock?.description || "查看全球各地的当前时间"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    {worldClocks.map((clock) => (
+                      <Card key={clock.timezone} className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                        <p className="text-muted-foreground text-sm mb-1">{clock.city}</p>
+                        <p className="text-2xl font-bold font-harmonyos-black">{clock.time}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                <Dialog open={isWeatherDialogOpen} onOpenChange={setIsWeatherDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-colors flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
+              {/* Weather Card */}
+              <Dialog open={isWeatherDialogOpen} onOpenChange={setIsWeatherDialogOpen}>
+                <DialogTrigger asChild>
+                  <Card className="p-6 bg-card/30 backdrop-blur-xl border-border/50 rounded-lg hover:bg-accent/50 transition-all cursor-pointer h-full min-h-[180px] flex flex-col justify-center">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        {weatherData ? getWeatherIcon(weatherData.code) : <Sun className="w-8 h-8 text-gray-400" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-muted-foreground mb-1">{t.weather}</div>
+                        <div className="text-3xl font-harmonyos-black">
+                          {weatherData ? `${Math.round(weatherData.temp)}°C` : t.loading}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1 truncate">
+                          {weatherData ? weatherData.city : "..."}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold" lang={language}>
+                      {t.weatherDetail?.title || "天气详情"}
+                    </DialogTitle>
+                    <DialogDescription lang={language}>
+                      {weatherData?.city} - {t.weatherDetail?.description || "详细天气信息"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  {detailedWeather && (
+                    <div className="space-y-6 mt-4">
+                      {/* Current Weather */}
+                      <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-muted-foreground text-sm font-semibold" lang={language}>
-                            {t.weather}
-                          </p>
-                          <p className="text-3xl font-bold font-harmonyos-black mt-2">
-                            {weatherData ? `${weatherData.temp}°C` : t.loading}
+                          <p className="text-muted-foreground text-sm">{t.weatherDetail?.current || "当前温度"}</p>
+                          <p className="text-5xl font-bold font-harmonyos-black">
+                            {detailedWeather.current_weather.temperature}°C
                           </p>
                         </div>
-                        {weatherData ? (
-                          getWeatherIcon(weatherData.code)
-                        ) : (
-                          <Wind className="w-8 h-8 text-gray-400 animate-pulse" />
-                        )}
+                        {getWeatherIcon(detailedWeather.current_weather.weathercode)}
                       </div>
-                      <div className="text-right mt-4">
-                        <p className="text-muted-foreground text-sm font-medium">
-                          {weatherData ? weatherData.city : t.unknown}
-                        </p>
+
+                      {/* Today's High/Low */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                          <p className="text-muted-foreground text-sm">{t.weatherDetail?.high || "最高温"}</p>
+                          <p className="text-2xl font-bold">{detailedWeather.daily.temperature_2m_max[0]}°C</p>
+                        </Card>
+                        <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                          <p className="text-muted-foreground text-sm">{t.weatherDetail?.low || "最低温"}</p>
+                          <p className="text-2xl font-bold">{detailedWeather.daily.temperature_2m_min[0]}°C</p>
+                        </Card>
+                        <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                          <p className="text-muted-foreground text-sm">{t.weatherDetail?.wind || "风速"}</p>
+                          <p className="text-2xl font-bold">{detailedWeather.current_weather.windspeed} km/h</p>
+                        </Card>
                       </div>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-3xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold" lang={language}>
-                        {t.weatherDetail?.title || "天气详情"}
-                      </DialogTitle>
-                      <DialogDescription lang={language}>
-                        {weatherData?.city} - {t.weatherDetail?.description || "详细天气信息"}
-                      </DialogDescription>
-                    </DialogHeader>
-                    {detailedWeather && (
-                      <div className="space-y-6 mt-4">
-                        {/* Current Weather */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.current || "当前温度"}</p>
-                            <p className="text-5xl font-bold font-harmonyos-black">
-                              {detailedWeather.current_weather.temperature}°C
-                            </p>
-                          </div>
-                          {getWeatherIcon(detailedWeather.current_weather.weathercode)}
-                        </div>
 
-                        {/* Today's High/Low */}
-                        <div className="grid grid-cols-3 gap-4">
-                          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
-                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.high || "最高温"}</p>
-                            <p className="text-2xl font-bold">{detailedWeather.daily.temperature_2m_max[0]}°C</p>
-                          </Card>
-                          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
-                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.low || "最低温"}</p>
-                            <p className="text-2xl font-bold">{detailedWeather.daily.temperature_2m_min[0]}°C</p>
-                          </Card>
-                          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
-                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.wind || "风速"}</p>
-                            <p className="text-2xl font-bold">{detailedWeather.current_weather.windspeed} km/h</p>
-                          </Card>
-                        </div>
-
-                        {/* 7-Day Forecast */}
-                        <div>
-                          <p className="text-muted-foreground text-sm mb-3">{t.weatherDetail?.forecast || "未来7天"}</p>
-                          <div className="grid grid-cols-7 gap-2">
-                            {detailedWeather.daily.temperature_2m_max.slice(0, 7).map((temp: number, i: number) => (
-                              <Card key={i} className="bg-card/50 backdrop-blur-sm border-border/50 p-2 text-center">
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {new Date(detailedWeather.daily.time[i]).toLocaleDateString(
-                                    language === "ja"
-                                      ? "ja-JP"
-                                      : language === "zh-TW"
-                                        ? "zh-TW"
-                                        : language === "en"
-                                          ? "en-US"
-                                          : "zh-CN",
-                                    { weekday: "short" },
-                                  )}
-                                </p>
-                                <p className="text-lg font-bold">{Math.round(temp)}°</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {Math.round(detailedWeather.daily.temperature_2m_min[i])}°
-                                </p>
-                              </Card>
-                            ))}
-                          </div>
+                      {/* 7-Day Forecast */}
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-3">{t.weatherDetail?.forecast || "未来7天"}</p>
+                        <div className="grid grid-cols-7 gap-2">
+                          {detailedWeather.daily.temperature_2m_max.slice(0, 7).map((temp: number, i: number) => (
+                            <Card key={i} className="bg-card/50 backdrop-blur-sm border-border/50 p-2 text-center">
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {new Date(detailedWeather.daily.time[i]).toLocaleDateString(
+                                  language === "ja"
+                                    ? "ja-JP"
+                                    : language === "zh-TW"
+                                      ? "zh-TW"
+                                      : language === "en"
+                                        ? "en-US"
+                                        : "zh-CN",
+                                  { weekday: "short" },
+                                )}
+                              </p>
+                              <p className="text-lg font-bold">{Math.round(temp)}°</p>
+                              <p className="text-xs text-muted-foreground">
+                                {Math.round(detailedWeather.daily.temperature_2m_min[i])}°
+                              </p>
+                            </Card>
+                          ))}
                         </div>
                       </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
-              </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
 
-              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
-                <h2 className="text-xl font-black mb-[-15px] text-center" lang={language}>
+              {/* Hitokoto Card */}
+              <Card className="p-6 bg-card/30 backdrop-blur-xl border-border/50 rounded-lg md:col-span-2 relative overflow-hidden h-full min-h-[150px] flex flex-col justify-center">
+                <div
+                  className={`text-lg mb-2 transition-all duration-300 ${hasKana ? "font-yugothic" : ""} ${
+                    language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto
+                  }`}
+                >
+                  {language === "ja" ? `"${toJapaneseNewForm(hitokoto.hitokoto)}"` : `"${hitokoto.hitokoto}"`}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  —— {language === "ja" ? `《${toJapaneseNewForm(hitokoto.from)}》` : `《${hitokoto.from}》`}
+                </div>
+                <div
+                  className="absolute bottom-0 left-0 h-1 bg-primary/30 transition-all duration-1000"
+                  style={{ width: `${(countdown / 5) * 100}%` }}
+                />
+              </Card>
+
+              {/* Friend Links */}
+              <Card className="p-6 bg-card/30 backdrop-blur-xl border-border/50 rounded-lg md:col-span-2 h-full min-h-[120px]">
+                <h3 className="text-lg font-bold mb-4">
                   {language === "ja" ? (
                     <>
                       <Ruby base="友" text="ゆう" />
@@ -848,7 +753,7 @@ export default function ProfilePage() {
                   ) : (
                     t.friendLinks
                   )}
-                </h2>
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {friendLinks.map((link, index) => (
                     <a
@@ -856,7 +761,7 @@ export default function ProfilePage() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center py-3 px-4 bg-muted/40 backdrop-blur-sm hover:bg-accent/50 transition-colors border border-border/50 rounded-lg font-semibold"
+                      className="px-4 py-2 bg-background/50 hover:bg-accent border border-border/50 rounded-lg text-center text-sm transition-all hover:scale-105"
                     >
                       {getFriendLinkName(link)}
                     </a>
@@ -864,100 +769,93 @@ export default function ProfilePage() {
                 </div>
               </Card>
 
-              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground text-center" lang={language}>
-                    {language === "ja" ? (
-                      <>
-                        これは
-                        <Ruby base="私" text="わたし" />の{" "}
-                        <a
-                          href="https://github.com/TCYKyousen"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          GitHub
-                        </a>{" "}
-                        <Ruby base="記" text="き" />
-                        <Ruby base="録" text="ろく" />
-                      </>
-                    ) : (
-                      <>
-                        {t.githubRecord}{" "}
-                        <a
-                          href="https://github.com/TCYKyousen"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline font-bold"
-                        >
-                          GitHub
-                        </a>{" "}
-                        {t.record}
-                      </>
-                    )}
-                  </p>
-                  <div className="w-full overflow-hidden rounded-lg">
-                    <Image
-                      src="https://github-readme-activity-graph.vercel.app/graph?username=TCYKyousen&theme=github-compact&hide_border=true&bg_color=161b22"
-                      alt="GitHub Activity Graph"
-                      width={800}
-                      height={400}
-                      className="w-full h-auto"
-                    />
-                  </div>
+              {/* GitHub Activity */}
+              <Card className="p-6 bg-card/30 backdrop-blur-xl border-border/50 rounded-lg md:col-span-2 h-full min-h-[300px]">
+                <div className="text-sm text-muted-foreground mb-4">
+                  {t.githubRecord}{" "}
+                  {language === "ja" ? (
+                    <>
+                      <Ruby base="GitHub" text="ギットハブ" />
+                    </>
+                  ) : (
+                    "GitHub"
+                  )}{" "}
+                  {t.record}
+                </div>
+                <div className="relative w-full h-[250px] overflow-hidden rounded-lg">
+                  <Image
+                    src="https://github-readme-activity-graph.vercel.app/graph?username=TCYKyousen&theme=github-dark-dimmed&hide_border=true&bg_color=00000000&color=58a6ff&line=1f6feb&point=58a6ff"
+                    alt="GitHub Activity Graph"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
                 </div>
               </Card>
             </div>
           </div>
         </div>
 
-        <footer className="fixed bottom-0 left-0 right-0 z-20 bg-card/30 backdrop-blur-xl border-t border-border/50">
-          <div className="container mx-auto px-8 lg:px-16 py-3">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p className="text-center text-sm text-muted-foreground font-bold">
-                {t.footer.split("v0.dev")[0]}
-                <a
-                  href="https://v0.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  v0.dev
-                </a>
-                {" & "}
-                <a
-                  href="https://trae.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  TRAE.ai
-                </a>
-              </p>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="px-4 py-2 bg-card/30 backdrop-blur-xl border border-border/50 rounded-lg hover:bg-accent/50 transition-colors text-sm flex items-center gap-2">
+        {/* Footer */}
+        <footer className="fixed bottom-0 left-0 right-0 z-20 bg-card/30 backdrop-blur-xl border-t border-border/50 py-3 px-8">
+          <div className="container mx-auto flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {t.footer.split("v0.dev").map((part, i) =>
+                i === 0 ? (
+                  <span key={i}>{part}</span>
+                ) : (
+                  <span key={i}>
+                    <a
+                      href="https://v0.dev"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-primary transition-colors"
+                    >
+                      v0.dev
+                    </a>
+                    {part.split("TRAE.ai").map((p, j) =>
+                      j === 0 ? (
+                        <span key={j}>{p}</span>
+                      ) : (
+                        <span key={j}>
+                          <a
+                            href="https://trae.ai"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary transition-colors"
+                          >
+                            TRAE.ai
+                          </a>
+                          {p}
+                        </span>
+                      ),
+                    )}
+                  </span>
+                ),
+              )}
+            </p>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-3 py-1.5 bg-background/50 hover:bg-accent border border-border/50 rounded-lg text-sm transition-all">
                   <Globe className="w-4 h-4" />
-                  <span className="font-black">
+                  <span>
                     {languageFlags[language]} {languageNames[language]}
                   </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-card/95 backdrop-blur-xl border-border/50 rounded-lg">
-                  <DropdownMenuItem onClick={() => setLanguage("zh")} className="cursor-pointer">
-                    {languageFlags.zh} {languageNames.zh}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur-xl border-border/50">
+                {(Object.keys(translations) as Language[]).map((lang) => (
+                  <DropdownMenuItem
+                    key={lang}
+                    onClick={() => setLanguage(lang)}
+                    className="cursor-pointer hover:bg-accent"
+                  >
+                    <span className="mr-2">{languageFlags[lang]}</span>
+                    {languageNames[lang]}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage("zh-TW")} className="cursor-pointer">
-                    {languageFlags["zh-TW"]} {languageNames["zh-TW"]}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage("ja")} className="cursor-pointer">
-                    {languageFlags.ja} {languageNames.ja}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage("en")} className="cursor-pointer">
-                    {languageFlags.en} {languageNames.en}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </footer>
       </div>
