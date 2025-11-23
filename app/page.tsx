@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import Image from "next/image"
 import {
   Globe,
@@ -15,6 +23,7 @@ import {
   CloudDrizzle,
   CloudFog,
   Wind,
+  Github,
 } from "lucide-react"
 
 interface Hitokoto {
@@ -42,6 +51,25 @@ const translations = {
     weather: "天气",
     loading: "加载中...",
     unknown: "未知",
+    worldClock: {
+      title: "世界时钟",
+      description: "查看全球各地的当前时间",
+      beijing: "北京",
+      tokyo: "东京",
+      london: "伦敦",
+      newYork: "纽约",
+      losAngeles: "洛杉矶",
+      sydney: "悉尼",
+    },
+    weatherDetail: {
+      title: "天气详情",
+      description: "详细天气信息",
+      current: "当前温度",
+      high: "最高温",
+      low: "最低温",
+      wind: "风速",
+      forecast: "未来7天",
+    },
   },
   ja: {
     developer: "開発者 & デザイナー",
@@ -59,6 +87,25 @@ const translations = {
     weather: "天気",
     loading: "読み込み中...",
     unknown: "不明",
+    worldClock: {
+      title: "世界時計",
+      description: "世界各地の現在時刻を確認",
+      beijing: "北京",
+      tokyo: "東京",
+      london: "ロンドン",
+      newYork: "ニューヨーク",
+      losAngeles: "ロサンゼルス",
+      sydney: "シドニー",
+    },
+    weatherDetail: {
+      title: "天気詳細",
+      description: "詳細な天気情報",
+      current: "現在の気温",
+      high: "最高気温",
+      low: "最低気温",
+      wind: "風速",
+      forecast: "7日間予報",
+    },
   },
   "zh-TW": {
     developer: "DEVELOPER & DESIGNER",
@@ -76,6 +123,25 @@ const translations = {
     weather: "天氣",
     loading: "加載中...",
     unknown: "未知",
+    worldClock: {
+      title: "世界時鐘",
+      description: "查看全球各地的當前時間",
+      beijing: "北京",
+      tokyo: "東京",
+      london: "倫敦",
+      newYork: "紐約",
+      losAngeles: "洛杉磯",
+      sydney: "雪梨",
+    },
+    weatherDetail: {
+      title: "天氣詳情",
+      description: "詳細天氣資訊",
+      current: "當前溫度",
+      high: "最高溫",
+      low: "最低溫",
+      wind: "風速",
+      forecast: "未來7天",
+    },
   },
   en: {
     developer: "DEVELOPER & DESIGNER",
@@ -92,6 +158,25 @@ const translations = {
     weather: "Weather",
     loading: "Loading...",
     unknown: "Unknown",
+    worldClock: {
+      title: "World Clock",
+      description: "View current time around the world",
+      beijing: "Beijing",
+      tokyo: "Tokyo",
+      london: "London",
+      newYork: "New York",
+      losAngeles: "Los Angeles",
+      sydney: "Sydney",
+    },
+    weatherDetail: {
+      title: "Weather Details",
+      description: "Detailed weather information",
+      current: "Current",
+      high: "High",
+      low: "Low",
+      wind: "Wind",
+      forecast: "7-Day Forecast",
+    },
   },
 }
 
@@ -179,6 +264,10 @@ export default function ProfilePage() {
   const [heartCount, setHeartCount] = useState(0)
   const [isHeartAnimating, setIsHeartAnimating] = useState(false)
   const [weatherData, setWeatherData] = useState<{ temp: number; code: number; city: string } | null>(null)
+  const [isClockDialogOpen, setIsClockDialogOpen] = useState(false)
+  const [isWeatherDialogOpen, setIsWeatherDialogOpen] = useState(false)
+  const [worldClocks, setWorldClocks] = useState<{ city: string; timezone: string; time: string }[]>([])
+  const [detailedWeather, setDetailedWeather] = useState<any>(null)
 
   const t = translations[language]
 
@@ -255,27 +344,6 @@ export default function ProfilePage() {
       setHeartCount(Number.parseInt(savedCount, 10))
     }
   }, [])
-
-  const translateCityName = async (cityName: string, lang: Language): Promise<string> => {
-    if (lang === "en" || !cityName || cityName === "Unknown") return cityName
-
-    try {
-      // Use OpenStreetMap Nominatim for localized city names
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&accept-language=${lang === "zh" ? "zh-CN" : lang === "zh-TW" ? "zh-TW" : "ja"}`,
-      )
-      const data = await response.json()
-      if (data && data.length > 0 && data[0].display_name) {
-        // Extract city name from display_name
-        const parts = data[0].display_name.split(",")
-        return parts[0].trim()
-      }
-    } catch (error) {
-      console.error("[v0] City name translation error:", error)
-    }
-
-    return cityName
-  }
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -362,6 +430,73 @@ export default function ProfilePage() {
 
     return () => clearInterval(interval)
   }, [language, t.unknown])
+
+  useEffect(() => {
+    if (!isClockDialogOpen) return
+
+    const timezones = [
+      { city: t.worldClock?.beijing || "北京", timezone: "Asia/Shanghai" },
+      { city: t.worldClock?.tokyo || "东京", timezone: "Asia/Tokyo" },
+      { city: t.worldClock?.london || "伦敦", timezone: "Europe/London" },
+      { city: t.worldClock?.newYork || "纽约", timezone: "America/New_York" },
+      { city: t.worldClock?.losAngeles || "洛杉矶", timezone: "America/Los_Angeles" },
+      { city: t.worldClock?.sydney || "悉尼", timezone: "Australia/Sydney" },
+    ]
+
+    const updateWorldClocks = () => {
+      const clocks = timezones.map((tz) => {
+        const time = new Date().toLocaleTimeString("zh-CN", {
+          timeZone: tz.timezone,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+        return { ...tz, time }
+      })
+      setWorldClocks(clocks)
+    }
+
+    updateWorldClocks()
+    const interval = setInterval(updateWorldClocks, 1000)
+
+    return () => clearInterval(interval)
+  }, [isClockDialogOpen, language])
+
+  useEffect(() => {
+    if (!isWeatherDialogOpen || !weatherData) return
+
+    const fetchDetailedWeather = async () => {
+      try {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords
+              const res = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,precipitation_probability,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`,
+              )
+              const data = await res.json()
+              setDetailedWeather(data)
+            },
+            async () => {
+              const geoRes = await fetch("https://ipapi.co/json/")
+              const geoData = await geoRes.json()
+              const { latitude, longitude } = geoData
+              const res = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,precipitation_probability,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`,
+              )
+              const data = await res.json()
+              setDetailedWeather(data)
+            },
+          )
+        }
+      } catch (error) {
+        console.error("[v0] Detailed weather fetch error:", error)
+      }
+    }
+
+    fetchDetailedWeather()
+  }, [isWeatherDialogOpen, weatherData])
 
   const formatDate = (date: Date) => {
     const year = date.getFullYear()
@@ -540,9 +675,7 @@ export default function ProfilePage() {
                     rel="noopener noreferrer"
                     className="hover:opacity-80 transition-opacity"
                   >
-                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                    </svg>
+                    <Github className="w-8 h-8" />
                   </a>
                   <a
                     href="https://x.com/kyousenk"
@@ -559,78 +692,150 @@ export default function ProfilePage() {
             </div>
 
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-700 delay-300 ${
+              className={`lg:w-2/3 space-y-6 transition-opacity duration-700 delay-500 ${
                 avatarAnimating ? "opacity-0" : "opacity-100"
               }`}
             >
-              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl">
-                <div className="text-center space-y-2">
-                  <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
-                    {formatDate(currentTime)}
-                  </p>
-                  <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">
-                    {formatTime(currentTime)}
-                  </p>
-                  <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
-                    {language === "ja" ? (
-                      <>
-                        <Ruby base="夜" text="よる" />が<Ruby base="更" text="ふ" />
-                        けました、
-                        <Ruby base="今日" text="きょう" />
-                        はどうでしたか？
-                      </>
-                    ) : (
-                      t.nightGreeting
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Dialog open={isClockDialogOpen} onOpenChange={setIsClockDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-colors">
+                      <div className="text-center space-y-2">
+                        <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
+                          {formatDate(currentTime)}
+                        </p>
+                        <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">
+                          {formatTime(currentTime)}
+                        </p>
+                        <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
+                          {language === "ja" ? (
+                            <>
+                              <Ruby base="夜" text="よる" />が<Ruby base="更" text="ふ" />
+                              けました、
+                              <Ruby base="今日" text="きょう" />
+                              はどうでしたか？
+                            </>
+                          ) : (
+                            t.nightGreeting
+                          )}
+                        </p>
+                      </div>
+                    </Card>
+                  </DialogTrigger>
+                  <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold" lang={language}>
+                        {t.worldClock?.title || "世界时钟"}
+                      </DialogTitle>
+                      <DialogDescription lang={language}>
+                        {t.worldClock?.description || "查看全球各地的当前时间"}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      {worldClocks.map((clock) => (
+                        <Card key={clock.timezone} className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                          <p className="text-muted-foreground text-sm mb-1">{clock.city}</p>
+                          <p className="text-2xl font-bold font-harmonyos-black">{clock.time}</p>
+                        </Card>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isWeatherDialogOpen} onOpenChange={setIsWeatherDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-colors flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-muted-foreground text-sm font-semibold" lang={language}>
+                            {t.weather}
+                          </p>
+                          <p className="text-3xl font-bold font-harmonyos-black mt-2">
+                            {weatherData ? `${weatherData.temp}°C` : t.loading}
+                          </p>
+                        </div>
+                        {weatherData ? (
+                          getWeatherIcon(weatherData.code)
+                        ) : (
+                          <Wind className="w-8 h-8 text-gray-400 animate-pulse" />
+                        )}
+                      </div>
+                      <div className="text-right mt-4">
+                        <p className="text-muted-foreground text-sm font-medium">
+                          {weatherData ? weatherData.city : t.unknown}
+                        </p>
+                      </div>
+                    </Card>
+                  </DialogTrigger>
+                  <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-3xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold" lang={language}>
+                        {t.weatherDetail?.title || "天气详情"}
+                      </DialogTitle>
+                      <DialogDescription lang={language}>
+                        {weatherData?.city} - {t.weatherDetail?.description || "详细天气信息"}
+                      </DialogDescription>
+                    </DialogHeader>
+                    {detailedWeather && (
+                      <div className="space-y-6 mt-4">
+                        {/* Current Weather */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.current || "当前温度"}</p>
+                            <p className="text-5xl font-bold font-harmonyos-black">
+                              {detailedWeather.current_weather.temperature}°C
+                            </p>
+                          </div>
+                          {getWeatherIcon(detailedWeather.current_weather.weathercode)}
+                        </div>
+
+                        {/* Today's High/Low */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.high || "最高温"}</p>
+                            <p className="text-2xl font-bold">{detailedWeather.daily.temperature_2m_max[0]}°C</p>
+                          </Card>
+                          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.low || "最低温"}</p>
+                            <p className="text-2xl font-bold">{detailedWeather.daily.temperature_2m_min[0]}°C</p>
+                          </Card>
+                          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-4">
+                            <p className="text-muted-foreground text-sm">{t.weatherDetail?.wind || "风速"}</p>
+                            <p className="text-2xl font-bold">{detailedWeather.current_weather.windspeed} km/h</p>
+                          </Card>
+                        </div>
+
+                        {/* 7-Day Forecast */}
+                        <div>
+                          <p className="text-muted-foreground text-sm mb-3">{t.weatherDetail?.forecast || "未来7天"}</p>
+                          <div className="grid grid-cols-7 gap-2">
+                            {detailedWeather.daily.temperature_2m_max.slice(0, 7).map((temp: number, i: number) => (
+                              <Card key={i} className="bg-card/50 backdrop-blur-sm border-border/50 p-2 text-center">
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {new Date(detailedWeather.daily.time[i]).toLocaleDateString(
+                                    language === "ja"
+                                      ? "ja-JP"
+                                      : language === "zh-TW"
+                                        ? "zh-TW"
+                                        : language === "en"
+                                          ? "en-US"
+                                          : "zh-CN",
+                                    { weekday: "short" },
+                                  )}
+                                </p>
+                                <p className="text-lg font-bold">{Math.round(temp)}°</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {Math.round(detailedWeather.daily.temperature_2m_min[i])}°
+                                </p>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </p>
-                </div>
-              </Card>
-
-              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl flex flex-col justify-between">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-muted-foreground text-sm font-semibold" lang={language}>
-                      {t.weather}
-                    </p>
-                    <p className="text-3xl font-bold font-harmonyos-black mt-2">
-                      {weatherData ? `${weatherData.temp}°C` : t.loading}
-                    </p>
-                  </div>
-                  {weatherData ? (
-                    getWeatherIcon(weatherData.code)
-                  ) : (
-                    <Wind className="w-8 h-8 text-gray-400 animate-pulse" />
-                  )}
-                </div>
-                <div className="text-right mt-4">
-                  <p className="text-muted-foreground text-sm font-medium">
-                    {weatherData ? weatherData.city : t.unknown}
-                  </p>
-                </div>
-              </Card>
-
-              <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2 relative overflow-hidden">
-                <div
-                  className={`text-center space-y-2 animate-in fade-in duration-500 ${hasKana ? "font-yugothic" : ""}`}
-                  key={hitokoto.hitokoto}
-                  lang={hasKana ? "ja" : language}
-                >
-                  <p className="text-lg text-balance font-black text-left">
-                    "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
-                  </p>
-                  <p className="text-sm text-muted-foreground font-bold text-right">
-                    ——《{language === "ja" ? toJapaneseNewForm(hitokoto.from) : hitokoto.from}》
-                    {hitokoto.from_who &&
-                      ` · ${language === "ja" ? toJapaneseNewForm(hitokoto.from_who) : hitokoto.from_who}`}
-                  </p>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted/20">
-                  <div
-                    className="h-full bg-primary transition-all duration-1000 ease-linear"
-                    style={{ width: `${(countdown / 5) * 100}%` }}
-                  />
-                </div>
-              </Card>
+                  </DialogContent>
+                </Dialog>
+              </div>
 
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
                 <h2 className="text-xl font-black mb-[-15px] text-center" lang={language}>
