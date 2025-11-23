@@ -41,6 +41,33 @@
   --font-harmonyos-black: "HarmonyOS Sans Black", sans-serif;
 }
 
+.light {
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(0.98 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(0.985 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.92 0 0);
+  --secondary-foreground: oklch(0.145 0 0);
+  --muted: oklch(0.92 0 0);
+  --muted-foreground: oklch(0.439 0 0);
+  --accent: oklch(0.92 0 0);
+  --accent-foreground: oklch(0.145 0 0);
+  --destructive: oklch(0.547 0.227 25.331);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.876 0 0);
+  --input: oklch(0.876 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -136,16 +163,17 @@
     font-family: var(--font-misans), "Microsoft Yahei", "Yu Gothic UI", system-ui, -apple-system, sans-serif;
   }
 
-  [lang="zh"] {
-    font-family: var(--font-misans), "Microsoft Yahei", system-ui, -apple-system, sans-serif;
-  }
-
   [lang="ja"] {
     font-family: var(--font-misans), "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
   }
 
+  [lang="en"] {
+    font-family: var(--font-misans), system-ui, -apple-system, sans-serif;
+  }
+
+  /* Adding Traditional Chinese font support */
   [lang="zh-TW"] {
-    font-family: var(--font-misans), "Yu Gothic UI", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+    font-family: var(--font-misans), "Microsoft JhengHei", "PingFang TC", "STHeiti", sans-serif;
   }
 
   ::-webkit-scrollbar {
@@ -154,23 +182,23 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: oklch(0.145 0 0);
+    background: var(--background);
     border-radius: 5px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.439 0 0);
+    background: var(--muted-foreground);
     border-radius: 5px;
-    border: 2px solid oklch(0.145 0 0);
+    border: 2px solid var(--background);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.539 0 0);
+    background: var(--accent-foreground);
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: oklch(0.439 0 0) oklch(0.145 0 0);
+    scrollbar-color: var(--muted-foreground) var(--background);
   }
 }
 
