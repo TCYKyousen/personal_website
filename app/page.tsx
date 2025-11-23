@@ -28,7 +28,7 @@ type Language = "zh" | "ja" | "zh-TW" | "en"
 const translations = {
   zh: {
     developer: "DEVELOPER & DESIGNER",
-    greeting: "你好，我是镜芊，很高兴认识你！",
+    greeting: "你好，我是Kyousen，很高兴认识你！",
     introduction:
       "我目前是SmartTeachCN的成员之一，正在参与开发拾块云集CogniBlock，同时正在钻研CJK字体的简体中文字形相关增补工作",
     nightGreeting: "夜深了，今天过的怎么样？",
@@ -45,7 +45,7 @@ const translations = {
   },
   ja: {
     developer: "開発者 & デザイナー",
-    greeting: "こんにちは、私は鏡芊です。よろしくお願いします！",
+    greeting: "こんにちは、私はKyousenです。よろしくお願いします！",
     introduction:
       "私は現在、SmartTeachCNのメンバーの一人として、CogniBlockの開発に参加しており、同時にCJKフォントの簡体字字形に関する補完作業を研究しています",
     nightGreeting: "夜が更けました、今日はどうでしたか？",
@@ -62,7 +62,7 @@ const translations = {
   },
   "zh-TW": {
     developer: "DEVELOPER & DESIGNER",
-    greeting: "你好，我是鏡芊，很高興認識你！",
+    greeting: "你好，我是Kyousen，很高興認識你！",
     introduction:
       "我目前是SmartTeachCN的成員之一，正在參與開發拾塊雲集CogniBlock，同時正在鑽研CJK字體的簡體中文字形相關增補工作",
     nightGreeting: "夜深了，今天過的怎麼樣？",
@@ -140,9 +140,9 @@ const toJapaneseNewForm = (text: string): string => {
     数: "数",
     声: "声",
     戦: "戦",
-    単: "単",
+    单: "単",
     鉄: "鉄",
-    転: "転",
+    转: "転",
     当: "当",
     党: "党",
     独: "独",
@@ -168,7 +168,7 @@ export default function ProfilePage() {
   const [avatarAnimating, setAvatarAnimating] = useState(true)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [hitokoto, setHitokoto] = useState<Hitokoto>({
-    hitokoto: "加載中...",
+    hitokoto: "加载中...",
     from: "",
     from_who: null,
   })
@@ -256,27 +256,102 @@ export default function ProfilePage() {
     }
   }, [])
 
+  const translateCityName = async (cityName: string, lang: Language): Promise<string> => {
+    if (lang === "en" || !cityName || cityName === "Unknown") return cityName
+
+    try {
+      // Use OpenStreetMap Nominatim for localized city names
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&accept-language=${lang === "zh" ? "zh-CN" : lang === "zh-TW" ? "zh-TW" : "ja"}`,
+      )
+      const data = await response.json()
+      if (data && data.length > 0 && data[0].display_name) {
+        // Extract city name from display_name
+        const parts = data[0].display_name.split(",")
+        return parts[0].trim()
+      }
+    } catch (error) {
+      console.error("[v0] City name translation error:", error)
+    }
+
+    return cityName
+  }
+
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Try to get location from ipapi.co
-        const geoRes = await fetch("https://ipapi.co/json/")
-        if (!geoRes.ok) throw new Error("Geo fetch failed")
-        const geoData = await geoRes.json()
-        const { latitude, longitude, city } = geoData
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords
 
-        // Get weather from Open-Meteo
-        const weatherRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
-        )
-        if (!weatherRes.ok) throw new Error("Weather fetch failed")
-        const weatherData = await weatherRes.json()
+              // Get city name from reverse geocoding
+              const langCode =
+                language === "zh" ? "zh-CN" : language === "zh-TW" ? "zh-TW" : language === "ja" ? "ja" : "en"
+              const geoRes = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${langCode}`,
+                {
+                  headers: {
+                    "User-Agent": "KyousenPersonalPage/1.0",
+                  },
+                },
+              )
+              const geoData = await geoRes.json()
+              const city =
+                geoData.address?.city ||
+                geoData.address?.town ||
+                geoData.address?.village ||
+                geoData.address?.county ||
+                t.unknown
 
-        setWeatherData({
-          temp: weatherData.current_weather.temperature,
-          code: weatherData.current_weather.weathercode,
-          city: city,
-        })
+              // Get weather from Open-Meteo
+              const weatherRes = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+              )
+              const weatherData = await weatherRes.json()
+
+              setWeatherData({
+                temp: weatherData.current_weather.temperature,
+                code: weatherData.current_weather.weathercode,
+                city: city,
+              })
+            },
+            async (error) => {
+              console.error("[v0] Geolocation error:", error)
+              // Fallback to IP-based location
+              const geoRes = await fetch("https://ipapi.co/json/")
+              const geoData = await geoRes.json()
+              const { latitude, longitude, city } = geoData
+
+              const weatherRes = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+              )
+              const weatherData = await weatherRes.json()
+
+              setWeatherData({
+                temp: weatherData.current_weather.temperature,
+                code: weatherData.current_weather.weathercode,
+                city: city,
+              })
+            },
+          )
+        } else {
+          // Fallback to IP-based location
+          const geoRes = await fetch("https://ipapi.co/json/")
+          const geoData = await geoRes.json()
+          const { latitude, longitude, city } = geoData
+
+          const weatherRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+          )
+          const weatherData = await weatherRes.json()
+
+          setWeatherData({
+            temp: weatherData.current_weather.temperature,
+            code: weatherData.current_weather.weathercode,
+            city: city,
+          })
+        }
       } catch (error) {
         console.error("[v0] Weather fetch error:", error)
       }
@@ -286,7 +361,7 @@ export default function ProfilePage() {
     const interval = setInterval(fetchWeather, 1800000) // Refresh every 30 mins
 
     return () => clearInterval(interval)
-  }, [])
+  }, [language, t.unknown])
 
   const formatDate = (date: Date) => {
     const year = date.getFullYear()
@@ -434,7 +509,10 @@ export default function ProfilePage() {
 
               <div className={`transition-opacity duration-700 ${avatarAnimating ? "opacity-0" : "opacity-100"}`}>
                 <div className="text-left">
-                  <h1 className="text-4xl font-black">{language === "ja" ? toJapaneseNewForm("镜芊") : "镜芊"}</h1>
+                  <h1 className="text-4xl font-black">Kyousen</h1>
+                  <p className="text-xs text-muted-foreground/60 mt-1 font-light tracking-wide">
+                    ALSO CALLED SEIRAI HARAGUCHI
+                  </p>
                   <p className="text-sm text-muted-foreground mt-2 font-extralight" lang={language}>
                     {t.developer}
                   </p>
