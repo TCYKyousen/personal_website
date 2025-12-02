@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import type React from "react"
+
+import { useEffect, useState, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -19,6 +21,79 @@ import {
   Palette,
   Clock,
 } from "lucide-react"
+
+// Moved useState inside the component as per React hooks rules
+// const [dialogOrigin, setDialogOrigin] = useState({ x: '50%', y: '50%' })
+
+interface PressableCardProps {
+  children: React.ReactNode
+  className?: string
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+  onOpenChange?: (open: boolean, origin?: { x: string; y: string }) => void
+}
+
+function PressableCard({ children, className = "", onClick, onOpenChange }: PressableCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [transform, setTransform] = useState("")
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const rotateX = (y - centerY) / 10
+    const rotateY = (centerX - x) / 10
+    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`)
+  }
+
+  const handleMouseLeave = () => {
+    setTransform("")
+  }
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const rotateX = (y - centerY) / 8
+    const rotateY = (centerX - x) / 8
+    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.95)`)
+  }
+
+  const handleMouseUp = () => {
+    setTransform("")
+  }
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const viewportX = (e.clientX / window.innerWidth) * 100
+    const viewportY = (e.clientY / window.innerHeight) * 100
+    if (onOpenChange) {
+      onOpenChange(true, { x: `${viewportX}%`, y: `${viewportY}%` })
+    }
+    if (onClick) {
+      onClick(e)
+    }
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      className={`transition-transform duration-200 ease-out ${className}`}
+      style={{ transform }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onClick={handleClick}
+    >
+      {children}
+    </div>
+  )
+}
 
 interface Hitokoto {
   hitokoto: string
@@ -55,6 +130,10 @@ const translations = {
     minTemp: "最低気温",
     windSpeed: "風速",
     forecast: "7日間予報",
+    humidity: "湿度",
+    apparentTemp: "体感温度",
+    uvIndex: "UV指数",
+    precipitation: "降水量",
   },
   en: {
     developer: "VIBE CODER",
@@ -81,6 +160,10 @@ const translations = {
     minTemp: "Low",
     windSpeed: "Wind",
     forecast: "7-Day Forecast",
+    humidity: "Humidity",
+    apparentTemp: "Feels Like",
+    uvIndex: "UV Index",
+    precipitation: "Precipitation",
   },
   "zh-TW": {
     developer: "氛圍程式設計師",
@@ -108,6 +191,10 @@ const translations = {
     minTemp: "最低溫",
     windSpeed: "風速",
     forecast: "7日預報",
+    humidity: "濕度",
+    apparentTemp: "體感溫度",
+    uvIndex: "紫外線指數",
+    precipitation: "降水量",
   },
 }
 
@@ -130,6 +217,10 @@ interface WeatherData {
   maxTemp: number
   minTemp: number
   windSpeed: number
+  humidity: number
+  apparentTemp: number
+  uvIndex: number
+  precipitation: number
   daily: {
     time: string[]
     temperature_2m_max: number[]
@@ -207,6 +298,43 @@ const getWeatherIcon = (code: number) => {
   if (code >= 61 && code <= 67) return <CloudRain className="w-8 h-8 text-blue-400" />
   if (code >= 71 && code <= 77) return <CloudSnow className="w-8 h-8 text-blue-200" />
   return <Cloud className="w-8 h-8 text-gray-400" />
+}
+
+// Defined AnimatedDialogProps
+interface AnimatedDialogProps {
+  children: React.ReactNode
+  trigger: React.ReactNode
+  origin?: { x: string; y: string }
+  onOriginChange?: (open: boolean, origin?: { x: string; y: string }) => void
+}
+
+function AnimatedDialog({ children, trigger, onOriginChange }: AnimatedDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [animationOrigin, setAnimationOrigin] = useState({ x: "50%", y: "50%" })
+
+  const handleOpenChange = (isOpen: boolean, clickOrigin?: { x: string; y: string }) => {
+    if (isOpen && clickOrigin) {
+      setAnimationOrigin(clickOrigin)
+    }
+    setOpen(isOpen)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
+      <DialogTrigger asChild>
+        <PressableCard onOpenChange={handleOpenChange}>{trigger}</PressableCard>
+      </DialogTrigger>
+      <DialogContent
+        className="sm:max-w-2xl bg-card/95 backdrop-blur-xl border-border/50"
+        style={{
+          transformOrigin: `${animationOrigin.x} ${animationOrigin.y}`,
+          animation: "zoomFromOrigin 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      >
+        {children}
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 export default function ProfilePage() {
@@ -317,83 +445,38 @@ export default function ProfilePage() {
     }
   }, [])
 
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        let latitude: number
-        let longitude: number
+  const fetchWeather = async (lat: number, lon: number) => {
+    try {
+      const weatherRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,apparent_temperature,uv_index,precipitation&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`,
+      )
+      const weatherData = await weatherRes.json()
 
-        // Try to get precise location from browser geolocation API first
-        if ("geolocation" in navigator) {
-          try {
-            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true,
-                timeout: 5000,
-              })
-            })
-            latitude = position.coords.latitude
-            longitude = position.coords.longitude
-          } catch {
-            // Fallback to IP-based geolocation
-            const ipResponse = await fetch("https://ipapi.co/json/")
-            const ipData = await ipResponse.json()
-            latitude = ipData.latitude
-            longitude = ipData.longitude
-          }
-        } else {
-          // Fallback to IP-based geolocation
-          const ipResponse = await fetch("https://ipapi.co/json/")
-          const ipData = await ipResponse.json()
-          latitude = ipData.latitude
-          longitude = ipData.longitude
-        }
+      const geoRes = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${language}`,
+      )
+      const geoData = await geoRes.json()
+      const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Unknown"
 
-        // Get city name with localization from Nominatim
-        const geoResponse = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${language}`,
-        )
-        const geoData = await geoResponse.json()
-        const city =
-          geoData.address?.city ||
-          geoData.address?.town ||
-          geoData.address?.village ||
-          geoData.address?.county ||
-          "Unknown"
-
-        // Get weather from Open-Meteo
-        const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=7`,
-        )
-        const weatherData = await weatherResponse.json()
-
-        setWeather({
-          temperature: Math.round(weatherData.current.temperature_2m),
-          weatherCode: weatherData.current.weathercode,
-          city,
-          maxTemp: Math.round(weatherData.daily.temperature_2m_max[0]),
-          minTemp: Math.round(weatherData.daily.temperature_2m_min[0]),
-          windSpeed: Math.round(weatherData.current.windspeed_10m),
-          daily: {
-            time: weatherData.daily.time,
-            temperature_2m_max: weatherData.daily.temperature_2m_max,
-            temperature_2m_min: weatherData.daily.temperature_2m_min,
-            weathercode: weatherData.daily.weathercode,
-          },
-        })
-        setWeatherLoading(false)
-      } catch (error) {
-        console.error("[v0] Failed to fetch weather:", error)
-        setWeatherLoading(false)
-      }
+      setWeather({
+        temperature: Math.round(weatherData.current.temperature_2m),
+        weatherCode: weatherData.current.weather_code,
+        city,
+        maxTemp: Math.round(weatherData.daily.temperature_2m_max[0]),
+        minTemp: Math.round(weatherData.daily.temperature_2m_min[0]),
+        windSpeed: Math.round(weatherData.current.wind_speed_10m),
+        humidity: Math.round(weatherData.current.relative_humidity_2m),
+        apparentTemp: Math.round(weatherData.current.apparent_temperature),
+        uvIndex: Math.round(weatherData.current.uv_index),
+        precipitation: weatherData.current.precipitation,
+        daily: weatherData.daily,
+      })
+      setWeatherLoading(false)
+    } catch (error) {
+      console.error("Failed to fetch weather:", error)
+      setWeatherLoading(false)
     }
-
-    fetchWeather()
-    // Refresh weather every 30 minutes
-    const interval = setInterval(fetchWeather, 1800000)
-
-    return () => clearInterval(interval)
-  }, [language])
+  }
 
   useEffect(() => {
     const savedSettings = localStorage.getItem("appSettings")
@@ -693,8 +776,9 @@ export default function ProfilePage() {
                 avatarAnimating ? "opacity-0" : "opacity-100"
               }`}
             >
-              <Dialog>
-                <DialogTrigger asChild>
+              {/* Use AnimatedDialog for Time and Weather */}
+              <AnimatedDialog
+                trigger={
                   <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-all">
                     <div className="text-center space-y-2">
                       <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
@@ -708,28 +792,27 @@ export default function ProfilePage() {
                       </p>
                     </div>
                   </Card>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl bg-card/95 backdrop-blur-xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl flex items-center gap-2">
-                      <Clock className="w-6 h-6" />
-                      {t.worldClock}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    {worldClocks.map((clock) => (
-                      <div key={clock.timezone} className="bg-muted/40 p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">{clock.city}</p>
-                        <p className="text-2xl font-bold font-harmonyos-black">{getWorldClockTime(clock.timezone)}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{t.localTime}</p>
-                      </div>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
+                }
+              >
+                <DialogHeader>
+                  <DialogTitle className="text-2xl flex items-center gap-2">
+                    <Clock className="w-6 h-6" />
+                    {t.worldClock}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  {worldClocks.map((clock) => (
+                    <div key={clock.timezone} className="bg-muted/40 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">{clock.city}</p>
+                      <p className="text-2xl font-bold font-harmonyos-black">{getWorldClockTime(clock.timezone)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t.localTime}</p>
+                    </div>
+                  ))}
+                </div>
+              </AnimatedDialog>
 
-              <Dialog>
-                <DialogTrigger asChild>
+              <AnimatedDialog
+                trigger={
                   <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-all">
                     <div className="text-center space-y-2">
                       {weatherLoading ? (
@@ -740,69 +823,95 @@ export default function ProfilePage() {
                           <div className="flex items-center justify-between">
                             <div className="text-left">
                               <p className="text-5xl font-bold font-harmonyos-black">{weather.temperature}°C</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {t.apparentTemp}: {weather.apparentTemp}°C
+                              </p>
                             </div>
-                            {getWeatherIcon(weather.weatherCode)}
+                            <div className="text-right">
+                              {getWeatherIcon(weather.weatherCode)}
+                              <p className="text-xs text-muted-foreground mt-1">{weather.humidity}% 💧</p>
+                            </div>
                           </div>
-                          <p className="text-muted-foreground text-sm font-light text-right">
-                            {weather.maxTemp}° / {weather.minTemp}°
-                          </p>
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>
+                              ↑ {weather.maxTemp}° ↓ {weather.minTemp}°
+                            </span>
+                            <span>🌬️ {weather.windSpeed} km/h</span>
+                          </div>
                         </>
                       ) : null}
                     </div>
                   </Card>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl bg-card/95 backdrop-blur-xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl">{t.weatherDetails}</DialogTitle>
-                  </DialogHeader>
-                  {weather && (
-                    <div className="space-y-6 mt-4">
-                      <div className="grid grid-cols-4 gap-4">
-                        <div className="bg-muted/40 p-4 rounded-lg text-center">
-                          <p className="text-xs text-muted-foreground mb-2">{t.currentTemp}</p>
-                          <p className="text-3xl font-bold">{weather.temperature}°C</p>
-                        </div>
-                        <div className="bg-muted/40 p-4 rounded-lg text-center">
-                          <p className="text-xs text-muted-foreground mb-2">{t.maxTemp}</p>
-                          <p className="text-3xl font-bold">{weather.maxTemp}°C</p>
-                        </div>
-                        <div className="bg-muted/40 p-4 rounded-lg text-center">
-                          <p className="text-xs text-muted-foreground mb-2">{t.minTemp}</p>
-                          <p className="text-3xl font-bold">{weather.minTemp}°C</p>
-                        </div>
-                        <div className="bg-muted/40 p-4 rounded-lg text-center">
-                          <p className="text-xs text-muted-foreground mb-2">{t.windSpeed}</p>
-                          <p className="text-3xl font-bold">{weather.windSpeed}</p>
-                          <p className="text-xs">km/h</p>
-                        </div>
+                }
+              >
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">{t.weatherDetails}</DialogTitle>
+                </DialogHeader>
+                {weather && (
+                  <div className="space-y-6 mt-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.currentTemp}</p>
+                        <p className="text-3xl font-bold">{weather.temperature}°C</p>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold mb-3">{t.forecast}</h3>
-                        <div className="grid grid-cols-7 gap-2">
-                          {weather.daily.time.map((date, index) => (
-                            <div key={date} className="bg-muted/40 p-2 rounded-lg text-center">
-                              <p className="text-xs text-muted-foreground mb-2">
-                                {new Date(date).toLocaleDateString(language === "ja" ? "ja-JP" : "en-US", {
-                                  weekday: "short",
-                                })}
-                              </p>
-                              <div className="flex justify-center mb-2">
-                                {getWeatherIcon(weather.daily.weathercode[index])}
-                              </div>
-                              <p className="text-xs font-bold">
-                                {Math.round(weather.daily.temperature_2m_max[index])}°
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {Math.round(weather.daily.temperature_2m_min[index])}°
-                              </p>
-                            </div>
-                          ))}
-                        </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.apparentTemp}</p>
+                        <p className="text-3xl font-bold">{weather.apparentTemp}°C</p>
+                      </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.humidity}</p>
+                        <p className="text-3xl font-bold">{weather.humidity}%</p>
+                      </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.windSpeed}</p>
+                        <p className="text-3xl font-bold">{weather.windSpeed}</p>
+                        <p className="text-xs">km/h</p>
+                      </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.maxTemp}</p>
+                        <p className="text-3xl font-bold">{weather.maxTemp}°C</p>
+                      </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.minTemp}</p>
+                        <p className="text-3xl font-bold">{weather.minTemp}°C</p>
+                      </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.uvIndex}</p>
+                        <p className="text-3xl font-bold">{weather.uvIndex}</p>
+                      </div>
+                      <div className="bg-muted/40 p-4 rounded-lg text-center">
+                        <p className="text-xs text-muted-foreground mb-2">{t.precipitation}</p>
+                        <p className="text-3xl font-bold">{weather.precipitation}</p>
+                        <p className="text-xs">mm</p>
                       </div>
                     </div>
-                  )}
-                </DialogContent>
-              </Dialog>
+                    <div>
+                      <h3 className="text-lg font-bold mb-3">{t.forecast}</h3>
+                      <div className="grid grid-cols-7 gap-2">
+                        {weather.daily.time.map((date, index) => (
+                          <div key={date} className="bg-muted/40 p-2 rounded-lg text-center">
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {new Date(date).toLocaleDateString(
+                                language === "ja" ? "ja-JP" : language === "zh-TW" ? "zh-TW" : "en-US",
+                                {
+                                  weekday: "short",
+                                },
+                              )}
+                            </p>
+                            <div className="flex justify-center mb-2">
+                              {getWeatherIcon(weather.daily.weathercode[index])}
+                            </div>
+                            <p className="text-xs font-bold">{Math.round(weather.daily.temperature_2m_max[index])}°</p>
+                            <p className="text-xs text-muted-foreground">
+                              {Math.round(weather.daily.temperature_2m_min[index])}°
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </AnimatedDialog>
 
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl relative overflow-hidden">
                 <div

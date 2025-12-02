@@ -143,6 +143,29 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Add zoom from origin animation keyframes */
+@keyframes zoomFromOrigin {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zoomToOrigin {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -171,7 +194,6 @@
     font-family: var(--font-misans), system-ui, -apple-system, sans-serif;
   }
 
-  /* Adding Traditional Chinese font support */
   [lang="zh-TW"] {
     font-family: var(--font-misans), "Microsoft JhengHei", "PingFang TC", "STHeiti", sans-serif;
   }
@@ -209,5 +231,14 @@
 
   .font-yugothic {
     font-family: "Yu Gothic UI", "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
+  }
+
+  /* Add animation utility classes */
+  .animate-zoom-in {
+    animation: zoomFromOrigin 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-zoom-out {
+    animation: zoomToOrigin 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
