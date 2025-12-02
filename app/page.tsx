@@ -105,10 +105,10 @@ type Language = "ja" | "en" | "zh-TW"
 
 const translations = {
   ja: {
-    developer: "バイブコーダー",
+    developer: "",
     greeting: "こんにちは、私はKyousenです。よろしくお願いします！",
     introduction:
-      "私は現在、SmartTeachCNのメンバーの一人として、CogniBlockの開発に参加しており、同時にCJKフォントの簡体字字形に関する補完作業を研究しています",
+      "私は現在、SmartTeachCNのメンバーの一人として、CogniBlockの開発に参加しており、同時にCJKフォントの簡体字字形に関する補完作業を研究しています。また、私はStar Rail Travel Societyのメンバーでもあり、組版を担当しています。もちろん、私の現実での最も重要な役割は、大学1年生であることです",
     nightGreeting: "夜が更けました、今日はどうでしたか?",
     morningGreeting: "おはようございます！",
     afternoonGreeting: "こんにちは！",
@@ -136,10 +136,10 @@ const translations = {
     precipitation: "降水量",
   },
   en: {
-    developer: "VIBE CODER",
+    developer: "",
     greeting: "Hello, I'm Kyousen, nice to meet you!",
     introduction:
-      "I am currently a member of SmartTeachCN, participating in the development of CogniBlock, and researching supplementary work on Simplified Chinese character forms for CJK fonts",
+      "I am currently a member of SmartTeachCN, participating in the development of CogniBlock, and researching supplementary work on Simplified Chinese character forms for CJK fonts. I am also a member of the Star Rail Travel Society, responsible for typesetting. Of course, my most important role in reality is being a first-year university student.",
     nightGreeting: "It's late, how was your day?",
     morningGreeting: "Good morning!",
     afternoonGreeting: "Good afternoon!",
@@ -166,10 +166,10 @@ const translations = {
     precipitation: "Precipitation",
   },
   "zh-TW": {
-    developer: "氛圍程式設計師",
+    developer: "",
     greeting: "你好，我是Kyousen，很高興認識你！",
     introduction:
-      "我目前是SmartTeachCN的成員之一，正在參與開發CogniBlock，同時正在鑽研CJK字型的簡體中文字形相關增補工作",
+      "我目前是SmartTeachCN的成員之一，正在參與開發CogniBlock，同時正在鑽研CJK字型的簡體中文字形相關增補工作。我同時也是星軌旅行奇想社的一員，負責排版工作，當然 我最最主要的現實裡最大的任務還是一名在校大一學生",
     nightGreeting: "夜深了，今天過得怎麼樣？",
     morningGreeting: "早安！",
     afternoonGreeting: "午安！",
@@ -238,14 +238,7 @@ interface AppSettings {
   showBackground: boolean
 }
 
-const Ruby = ({ base, text }: { base: string; text: string }) => (
-  <ruby>
-    {base}
-    <rp>(</rp>
-    <rt className="text-[0.5em]">{text}</rt>
-    <rp>)</rp>
-  </ruby>
-)
+
 
 const toJapaneseNewForm = (text: string): string => {
   const conversionMap: { [key: string]: string } = {
@@ -325,15 +318,66 @@ function AnimatedDialog({ children, trigger, onOriginChange }: AnimatedDialogPro
         <PressableCard onOpenChange={handleOpenChange}>{trigger}</PressableCard>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-2xl bg-card/95 backdrop-blur-xl border-border/50"
+        className="sm:max-w-2xl bg-card/95 backdrop-blur-xl border-border/50 data-[state=open]:animate-zoom-in data-[state=closed]:animate-zoom-out"
         style={{
           transformOrigin: `${animationOrigin.x} ${animationOrigin.y}`,
-          animation: "zoomFromOrigin 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {children}
       </DialogContent>
     </Dialog>
+  )
+}
+
+
+const greetings = [
+  "Hello", // English
+  "你好", // Chinese (Simplified)
+  "こんにちは", // Japanese
+  "안녕하세요", // Korean
+  "Bonjour", // French
+  "Hola", // Spanish
+  "Hallo", // German
+  "Привет", // Russian
+  "Ciao", // Italian
+  "Olá", // Portuguese
+]
+
+function TypewriterGreeting() {
+  const [text, setText] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [loopNum, setLoopNum] = useState(0)
+  const [typingSpeed, setTypingSpeed] = useState(150)
+
+  useEffect(() => {
+    const handleTyping = () => {
+      const i = loopNum % greetings.length
+      const fullText = greetings[i]
+
+      setText(isDeleting ? fullText.substring(0, text.length - 1) : fullText.substring(0, text.length + 1))
+
+      setTypingSpeed(isDeleting ? 100 : 200)
+
+      if (!isDeleting && text === fullText) {
+        setTimeout(() => setIsDeleting(true), 2000) // Pause at end
+      } else if (isDeleting && text === "") {
+        setIsDeleting(false)
+        setLoopNum(loopNum + 1)
+        setTypingSpeed(500) // Pause before starting new word
+      }
+    }
+
+    const timer = setTimeout(handleTyping, typingSpeed)
+    return () => clearTimeout(timer)
+  }, [text, isDeleting, loopNum, typingSpeed])
+
+  return (
+    <div className="h-24 flex items-center">
+      <h1 className="text-6xl font-black" style={{ fontFamily: 'var(--font-ma-shan-zheng), var(--font-zcool-kuaile), var(--font-zen-kurenaido), var(--font-nanum-pen-script), "Comic Sans MS", "Chalkboard SE", "Comic Neue", cursive' }}>
+        {text}
+        <span className="animate-pulse ml-1">|</span>
+      </h1>
+    </div>
   )
 }
 
@@ -479,6 +523,22 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeather(position.coords.latitude, position.coords.longitude)
+        },
+        (error) => {
+          console.error("Geolocation error:", error)
+          fetchWeather(35.6895, 139.6917)
+        },
+      )
+    } else {
+      fetchWeather(35.6895, 139.6917)
+    }
+  }, [])
+
+  useEffect(() => {
     const savedSettings = localStorage.getItem("appSettings")
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings))
@@ -547,14 +607,7 @@ export default function ProfilePage() {
   const friendLinks = [
     {
       name: "智教联盟",
-      nameJa: (
-        <>
-          <Ruby base="智" text="ち" />
-          <Ruby base="教" text="きょう" />
-          <Ruby base="連" text="れん" />
-          <Ruby base="盟" text="めい" />
-        </>
-      ),
+      nameJa: "智教連盟",
       nameEn: "SmartTeachCN",
       url: "https://forum.smart-teach.cn/",
     },
@@ -572,17 +625,7 @@ export default function ProfilePage() {
     },
     {
       name: "星轨旅行奇想社",
-      nameJa: (
-        <>
-          <Ruby base="星" text="せい" />
-          <Ruby base="軌" text="き" />
-          <Ruby base="旅" text="りょ" />
-          <Ruby base="行" text="こう" />
-          <Ruby base="奇" text="き" />
-          <Ruby base="想" text="そう" />
-          <Ruby base="社" text="しゃ" />
-        </>
-      ),
+      nameJa: "星軌旅行奇想社",
       nameEn: "Star Rail Travel Society",
       url: "https://next.tics.top/",
     },
@@ -714,21 +757,9 @@ export default function ProfilePage() {
         <div className="relative z-10 container mx-auto px-8 lg:px-16 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
             <div className="flex flex-col items-start space-y-6 lg:pr-8">
-              <div
-                className={`relative w-32 h-32 rounded-3xl overflow-hidden transition-all duration-1000 ease-out ${
-                  avatarAnimating ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50" : "relative"
-                }`}
-              >
-                <Image src="/avatar.jpg" alt="Avatar" fill className="object-cover" />
-              </div>
-
               <div className={`transition-opacity duration-700 ${avatarAnimating ? "opacity-0" : "opacity-100"}`}>
                 <div className="text-left relative">
-                  <h1 className="text-4xl font-black">Kyousen</h1>
-                  <p className="text-[10px] text-muted-foreground/60 font-light mt-1">ALSO CALLED SEIRAI HARAGUCHI</p>
-                  <p className="text-sm text-muted-foreground mt-2 font-extralight" lang={language}>
-                    {t.developer}
-                  </p>
+                  <TypewriterGreeting />
                 </div>
 
                 <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6 font-black">
@@ -938,15 +969,7 @@ export default function ProfilePage() {
 
               <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl md:col-span-2">
                 <h2 className="text-xl font-black mb-4 text-center" lang={language}>
-                  {language === "ja" ? (
-                    <>
-                      <Ruby base="友" text="ゆう" />
-                      <Ruby base="情" text="じょう" />
-                      リンク
-                    </>
-                  ) : (
-                    t.friendLinks
-                  )}
+                  {t.friendLinks}
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {friendLinks.map((link, index) => (
@@ -968,8 +991,7 @@ export default function ProfilePage() {
                   <p className="text-sm text-muted-foreground text-center" lang={language}>
                     {language === "ja" ? (
                       <>
-                        これは
-                        <Ruby base="私" text="わたし" />の{" "}
+                        これは私の{" "}
                         <a
                           href="https://github.com/TCYKyousen"
                           target="_blank"
@@ -978,8 +1000,7 @@ export default function ProfilePage() {
                         >
                           GitHub
                         </a>{" "}
-                        <Ruby base="記" text="き" />
-                        <Ruby base="録" text="ろく" />
+                        記録
                       </>
                     ) : (
                       <>
