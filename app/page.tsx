@@ -293,39 +293,114 @@ const getWeatherIcon = (code: number) => {
   return <Cloud className="w-8 h-8 text-gray-400" />
 }
 
-// Defined AnimatedDialogProps
 interface AnimatedDialogProps {
   children: React.ReactNode
   trigger: React.ReactNode
-  origin?: { x: string; y: string }
-  onOriginChange?: (open: boolean, origin?: { x: string; y: string }) => void
 }
 
-function AnimatedDialog({ children, trigger, onOriginChange }: AnimatedDialogProps) {
+function AnimatedDialog({ children, trigger }: AnimatedDialogProps) {
   const [open, setOpen] = useState(false)
-  const [animationOrigin, setAnimationOrigin] = useState({ x: "50%", y: "50%" })
+  const [cardRect, setCardRect] = useState<DOMRect | null>(null)
+  const [isOpening, setIsOpening] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
-  const handleOpenChange = (isOpen: boolean, clickOrigin?: { x: string; y: string }) => {
-    if (isOpen && clickOrigin) {
-      setAnimationOrigin(clickOrigin)
+  const handleOpen = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect()
+      setCardRect(rect)
+      setIsOpening(true)
+      setOpen(true)
+
+      setTimeout(() => {
+        setIsOpening(false)
+      }, 50)
     }
-    setOpen(isOpen)
+  }
+
+  const handleClose = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect()
+      setCardRect(rect)
+      setIsClosing(true)
+
+      setTimeout(() => {
+        setOpen(false)
+        setIsClosing(false)
+      }, 400)
+    }
+  }
+
+  const getContentStyle = () => {
+    if (!cardRect) return {}
+
+    if (isOpening) {
+      return {
+        position: "fixed" as const,
+        top: `${cardRect.top}px`,
+        left: `${cardRect.left}px`,
+        width: `${cardRect.width}px`,
+        height: `${cardRect.height}px`,
+        maxWidth: "none",
+        transform: "none",
+        margin: 0,
+        padding: "1.5rem",
+        transition: "none",
+        borderRadius: "0.5rem",
+      }
+    }
+
+    if (isClosing) {
+      return {
+        position: "fixed" as const,
+        top: `${cardRect.top}px`,
+        left: `${cardRect.left}px`,
+        width: `${cardRect.width}px`,
+        height: `${cardRect.height}px`,
+        maxWidth: "none",
+        transform: "none",
+        margin: 0,
+        padding: "1.5rem",
+        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        borderRadius: "0.5rem",
+      }
+    }
+
+    return {
+      position: "fixed" as const,
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: "calc(100% - 2rem)",
+      maxWidth: "42rem",
+      margin: 0,
+      padding: "1.5rem",
+      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+      borderRadius: "0.5rem",
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
-      <DialogTrigger asChild>
-        <PressableCard onOpenChange={handleOpenChange}>{trigger}</PressableCard>
-      </DialogTrigger>
-      <DialogContent
-        className="sm:max-w-2xl bg-card/95 backdrop-blur-xl border-border/50 data-[state=open]:animate-zoom-in data-[state=closed]:animate-zoom-out"
-        style={{
-          transformOrigin: `${animationOrigin.x} ${animationOrigin.y}`,
-        }}
-      >
-        {children}
-      </DialogContent>
-    </Dialog>
+    <>
+      <div ref={cardRef}>
+        <PressableCard onClick={handleOpen}>{trigger}</PressableCard>
+      </div>
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+        <DialogContent
+          className="bg-card/95 backdrop-blur-xl border-border/50 !animate-none"
+          style={getContentStyle()}
+        >
+          <div
+            style={{
+              opacity: isOpening ? 0 : 1,
+              transition: isOpening ? "none" : "opacity 0.3s ease-in-out 0.1s",
+            }}
+          >
+            {children}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
