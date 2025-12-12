@@ -503,20 +503,15 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const brightInterval = setInterval(() => {
-      setLoadingBright((prev) => !prev)
-    }, 250)
-
+    // Windows 10 style loading simulation
     const timer = setTimeout(() => {
-      clearInterval(brightInterval)
       setIsLoading(false)
       setTimeout(() => {
         setAvatarAnimating(false)
       }, 100)
-    }, 2000)
+    }, 15000) // Extended loading time to 15s
 
     return () => {
-      clearInterval(brightInterval)
       clearTimeout(timer)
     }
   }, [])
@@ -832,25 +827,17 @@ export default function Home() {
 
       {isLoading && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center transition-colors duration-250 ${
-            loadingBright ? "bg-background" : "bg-background/80"
-          }`}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-500"
         >
           <div className="relative">
-            <div
-              className={`relative w-32 h-32 rounded-3xl overflow-hidden transition-all duration-250 ${
-                loadingBright ? "opacity-100 scale-100" : "opacity-80 scale-95"
-              }`}
-            >
-              <Image src="/avatar.jpg" alt="Avatar" fill className="object-cover" priority />
-            </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className={`w-40 h-40 border-4 rounded-full animate-spin transition-colors duration-250 ${
-                  loadingBright ? "border-primary/30 border-t-primary" : "border-primary/20 border-t-primary/70"
-                }`}
-                style={{ animationDuration: "1s" }}
-              />
+              <div className="win10-loader">
+                <div className="win10-dot"></div>
+                <div className="win10-dot"></div>
+                <div className="win10-dot"></div>
+                <div className="win10-dot"></div>
+                <div className="win10-dot"></div>
+              </div>
             </div>
           </div>
         </div>
