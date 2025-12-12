@@ -1,6 +1,6 @@
 export async function GET() {
   try {
-    const response = await fetch("https://v1.hitokoto.cn/")
+    const response = await fetch("https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=h&c=i&c=k")
     const data = await response.json()
     return Response.json(data)
   } catch (error) {
@@ -11,3 +11,4 @@ export async function GET() {
     )
   }
 }
+

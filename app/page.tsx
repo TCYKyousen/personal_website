@@ -1,12 +1,11 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Image from "next/image"
+import { BackgroundSlideshow } from "@/components/background-slideshow"
 import {
   Globe,
   Heart,
@@ -19,11 +18,15 @@ import {
   Eye,
   Moon,
   Palette,
+  X,
   Clock,
 } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useLock } from "@/components/lock-provider"
+import { Lock } from "lucide-react"
 
 // Moved useState inside the component as per React hooks rules
-// const [dialogOrigin, setDialogOrigin] = useState({ x: '50%', y: '50%' })
+// const [dialogOrigin] = useState({ x: '50%', y: '50%' })
 
 interface PressableCardProps {
   children: React.ReactNode
@@ -32,68 +35,75 @@ interface PressableCardProps {
   onOpenChange?: (open: boolean, origin?: { x: string; y: string }) => void
 }
 
-function PressableCard({ children, className = "", onClick, onOpenChange }: PressableCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const [transform, setTransform] = useState("")
+const PressableCard = React.forwardRef<HTMLDivElement, PressableCardProps>(
+  ({ children, className = "", onClick, onOpenChange }, ref) => {
+    // Internal ref for transform calculations
+    const wrapperRef = useRef<HTMLDivElement>(null)
+    const [transform, setTransform] = useState("")
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    const rotateX = (y - centerY) / 10
-    const rotateY = (centerX - x) / 10
-    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`)
-  }
+    // Merge refs
+    React.useImperativeHandle(ref, () => wrapperRef.current!, [])
 
-  const handleMouseLeave = () => {
-    setTransform("")
-  }
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    const rotateX = (y - centerY) / 8
-    const rotateY = (centerX - x) / 8
-    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.95)`)
-  }
-
-  const handleMouseUp = () => {
-    setTransform("")
-  }
-
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const viewportX = (e.clientX / window.innerWidth) * 100
-    const viewportY = (e.clientY / window.innerHeight) * 100
-    if (onOpenChange) {
-      onOpenChange(true, { x: `${viewportX}%`, y: `${viewportY}%` })
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!wrapperRef.current) return
+      const rect = wrapperRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const centerX = rect.width / 2
+      const centerY = rect.height / 2
+      const rotateX = (y - centerY) / 10
+      const rotateY = (centerX - x) / 10
+      setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.98)`)
     }
-    if (onClick) {
-      onClick(e)
-    }
-  }
 
-  return (
-    <div
-      ref={cardRef}
-      className={`transition-transform duration-200 ease-out ${className}`}
-      style={{ transform }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onClick={handleClick}
-    >
-      {children}
-    </div>
-  )
-}
+    const handleMouseLeave = () => {
+      setTransform("")
+    }
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!wrapperRef.current) return
+      const rect = wrapperRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const centerX = rect.width / 2
+      const centerY = rect.height / 2
+      const rotateX = (y - centerY) / 8
+      const rotateY = (centerX - x) / 8
+      setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(0.95)`)
+    }
+
+    const handleMouseUp = () => {
+      setTransform("")
+    }
+
+    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      const viewportX = (e.clientX / window.innerWidth) * 100
+      const viewportY = (e.clientY / window.innerHeight) * 100
+      if (onOpenChange) {
+        onOpenChange(true, { x: `${viewportX}%`, y: `${viewportY}%` })
+      }
+      if (onClick) {
+        onClick(e)
+      }
+    }
+
+    return (
+      <div
+        ref={wrapperRef}
+        className={className}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onClick={handleClick}
+      >
+        <div className="transition-transform duration-200 ease-out w-full h-full" style={{ transform }}>
+          {children}
+        </div>
+      </div>
+    )
+  }
+)
 
 interface Hitokoto {
   hitokoto: string
@@ -300,108 +310,100 @@ interface AnimatedDialogProps {
 
 function AnimatedDialog({ children, trigger }: AnimatedDialogProps) {
   const [open, setOpen] = useState(false)
-  const [cardRect, setCardRect] = useState<DOMRect | null>(null)
-  const [isOpening, setIsOpening] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const cardRef = useRef<HTMLDivElement>(null)
+  const [originRect, setOriginRect] = useState<DOMRect | null>(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
 
   const handleOpen = () => {
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect()
-      setCardRect(rect)
-      setIsOpening(true)
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setOriginRect(rect)
       setOpen(true)
-
-      setTimeout(() => {
-        setIsOpening(false)
-      }, 50)
-    }
-  }
-
-  const handleClose = () => {
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect()
-      setCardRect(rect)
-      setIsClosing(true)
-
-      setTimeout(() => {
-        setOpen(false)
-        setIsClosing(false)
-      }, 400)
-    }
-  }
-
-  const getContentStyle = () => {
-    if (!cardRect) return {}
-
-    if (isOpening) {
-      return {
-        position: "fixed" as const,
-        top: `${cardRect.top}px`,
-        left: `${cardRect.left}px`,
-        width: `${cardRect.width}px`,
-        height: `${cardRect.height}px`,
-        maxWidth: "none",
-        transform: "none",
-        margin: 0,
-        padding: "1.5rem",
-        transition: "none",
-        borderRadius: "0.5rem",
-      }
-    }
-
-    if (isClosing) {
-      return {
-        position: "fixed" as const,
-        top: `${cardRect.top}px`,
-        left: `${cardRect.left}px`,
-        width: `${cardRect.width}px`,
-        height: `${cardRect.height}px`,
-        maxWidth: "none",
-        transform: "none",
-        margin: 0,
-        padding: "1.5rem",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        borderRadius: "0.5rem",
-      }
-    }
-
-    return {
-      position: "fixed" as const,
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: "calc(100% - 2rem)",
-      maxWidth: "42rem",
-      margin: 0,
-      padding: "1.5rem",
-      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-      borderRadius: "0.5rem",
     }
   }
 
   return (
     <>
-      <div ref={cardRef}>
-        <PressableCard onClick={handleOpen}>{trigger}</PressableCard>
+      <div ref={triggerRef} onClick={handleOpen} className="cursor-pointer">
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          {trigger}
+        </motion.div>
       </div>
-      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-        <DialogContent
-          className="bg-card/95 backdrop-blur-xl border-border/50 !animate-none"
-          style={getContentStyle()}
-        >
-          <div
-            style={{
-              opacity: isOpening ? 0 : 1,
-              transition: isOpening ? "none" : "opacity 0.3s ease-in-out 0.1s",
-            }}
-          >
-            {children}
-          </div>
-        </DialogContent>
-      </Dialog>
+
+      <AnimatePresence>
+        {open && originRect && (
+          <DialogPortal>
+             <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                onClick={() => setOpen(false)}
+              />
+             <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+                <motion.div
+                  initial={{
+                    position: "fixed",
+                    top: originRect.top,
+                    left: originRect.left,
+                    width: originRect.width,
+                    height: originRect.height,
+                    opacity: 0,
+                    scale: 0.95
+                  }}
+                  animate={{
+                    position: "fixed",
+                    top: "50%",
+                    left: "50%",
+                    x: "-50%",
+                    y: "-50%",
+                    width: "100%",
+                    maxWidth: "42rem",
+                    height: "auto",
+                    opacity: 1,
+                    scale: 1,
+                    transition: { type: "spring", damping: 25, stiffness: 300 }
+                  }}
+                  exit={{
+                    position: "fixed",
+                    top: originRect.top,
+                    left: originRect.left,
+                    width: originRect.width,
+                    height: originRect.height,
+                    x: 0,
+                    y: 0,
+                    opacity: 0,
+                    scale: 0.95,
+                    transition: { duration: 0.2 }
+                  }}
+                  className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-lg shadow-2xl overflow-hidden pointer-events-auto"
+                  style={{ maxHeight: "85vh", overflowY: "auto" }}
+                >
+                  <div className="p-6">
+                    {children}
+                  </div>
+                  <button
+                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted/50 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setOpen(false)
+                    }}
+                  >
+                    <X className="w-4 h-4 opacity-70" />
+                  </button>
+                </motion.div>
+             </div>
+          </DialogPortal>
+        )}
+      </AnimatePresence>
     </>
   )
+}
+
+function DialogPortal({ children }: { children: React.ReactNode }) {
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => setMounted(true), [])
+    if (!mounted) return null
+    return createPortal(children, document.body)
 }
 
 
@@ -456,18 +458,21 @@ function TypewriterGreeting() {
   )
 }
 
-export default function ProfilePage() {
+import { createPortal } from "react-dom"
+import { cn } from "@/lib/utils"
+
+export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadingBright, setLoadingBright] = useState(true)
   const [avatarAnimating, setAvatarAnimating] = useState(true)
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const [hitokoto, setHitokoto] = useState<Hitokoto>({
     hitokoto: "加載中...",
     from: "",
     from_who: null,
   })
   const [countdown, setCountdown] = useState(5)
-  const [backgroundImage, setBackgroundImage] = useState("/background.jpg")
+  const [backgroundImages, setBackgroundImages] = useState<string[]>(["/background.jpg"])
   const [hasKana, setHasKana] = useState(false)
   const [language, setLanguage] = useState<Language>("ja")
   const [heartCount, setHeartCount] = useState(0)
@@ -485,7 +490,17 @@ export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [customCursor, setCustomCursor] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
 
+  const { lock, isLocked } = useLock()
   const t = translations[language]
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleLock = () => {
+    lock()
+  }
 
   useEffect(() => {
     const brightInterval = setInterval(() => {
@@ -507,21 +522,36 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
-    const fetchBackground = async () => {
+    const controller = new AbortController()
+    const fetchBackgrounds = async () => {
       try {
-        const response = await fetch("https://api-images.kanochan.net/api.php?album=Genshin-Impact")
-        if (response.ok) {
-          setBackgroundImage(response.url)
+        // Fetch multiple images for the slideshow
+        const promises = Array.from({ length: 5 }).map(() => 
+          fetch("https://api-images.kanochan.net/api.php?album=Genshin-Impact", {
+            method: "GET",
+            cache: "no-cache",
+            signal: controller.signal
+          }).then(res => res.url)
+        )
+        
+        const urls = await Promise.all(promises)
+        const uniqueUrls = Array.from(new Set(urls.filter(url => url)))
+        
+        if (uniqueUrls.length > 0) {
+          setBackgroundImages(uniqueUrls)
         }
       } catch (error) {
-        console.error("[v0] Failed to fetch background:", error)
+        if (error instanceof Error && error.name === 'AbortError') return
+        console.error("[v0] Failed to fetch backgrounds:", error)
       }
     }
 
-    fetchBackground()
+    fetchBackgrounds()
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {
+    setCurrentTime(new Date())
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
@@ -530,24 +560,42 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchHitokoto = async () => {
+      // Don't reset to loading if it's just a refresh, only on language change or init
+      // But user logic sets it to loading... let's keep logic but handle abort
+      // setHitokoto({ hitokoto: "加载中...", from: "", from_who: null }); 
+      
       try {
-        const response = await fetch("/api/hitokoto")
-        const data = await response.json()
-        setHitokoto(data)
-        setCountdown(5)
-        const kanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/
-        setHasKana(kanaRegex.test(data.hitokoto))
+        // Use internal API which handles the Chinese filtering and fallbacks
+        const response = await fetch("/api/hitokoto", { signal: controller.signal });
+        const data = await response.json();
+        const newHitokoto = data;
+
+        setHitokoto(newHitokoto);
+        setCountdown(5);
+        // Kana check is no longer relevant if we only use Chinese
+        const kanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
+        setHasKana(kanaRegex.test(newHitokoto.hitokoto));
       } catch (error) {
-        console.error("[v0] Failed to fetch hitokoto:", error)
+        if (error instanceof Error && error.name === 'AbortError') return
+        console.error("[v0] Failed to fetch hitokoto:", error);
+        setHitokoto({
+          hitokoto: "Failed to load quote.",
+          from: "System",
+          from_who: null,
+        });
       }
-    }
+    };
 
-    fetchHitokoto()
-    const interval = setInterval(fetchHitokoto, 5000)
+    fetchHitokoto();
+    const interval = setInterval(fetchHitokoto, 5000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
+  }, [language]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -569,11 +617,13 @@ export default function ProfilePage() {
       const weatherRes = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,apparent_temperature,uv_index,precipitation&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`,
       )
+      if (!weatherRes.ok) throw new Error('Weather API failed')
       const weatherData = await weatherRes.json()
 
       const geoRes = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${language}`,
       )
+      if (!geoRes.ok) throw new Error('Geo API failed')
       const geoData = await geoRes.json()
       const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Unknown"
 
@@ -604,7 +654,9 @@ export default function ProfilePage() {
           fetchWeather(position.coords.latitude, position.coords.longitude)
         },
         (error) => {
-          console.error("Geolocation error:", error)
+          // Geolocation might be denied or unavailable, which is common.
+          // Using console.warn instead of console.error to avoid alarming logs.
+          console.warn("Geolocation unavailable:", error.message)
           fetchWeather(35.6895, 139.6917)
         },
       )
@@ -738,9 +790,9 @@ export default function ProfilePage() {
     { city: language === "ja" ? "シドニー" : "Sydney", timezone: "Australia/Sydney" },
   ]
 
-  const downloadBackground = async () => {
+  const handleDownloadBackground = async () => {
     try {
-      const response = await fetch(backgroundImage)
+      const response = await fetch(backgroundImages[0] || "/placeholder.svg")
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -756,6 +808,7 @@ export default function ProfilePage() {
   }
 
   const getTimeBasedGreeting = () => {
+    if (!currentTime) return ""
     const hour = currentTime.getHours()
     if (hour >= 5 && hour < 12) return t.morningGreeting
     if (hour >= 12 && hour < 18) return t.afternoonGreeting
@@ -765,15 +818,16 @@ export default function ProfilePage() {
 
   return (
     <>
-      {settings.cursor === "dot" && (
+      {settings.cursor === "dot" && mounted && createPortal(
         <div
-          className="fixed pointer-events-none z-[9999] w-4 h-4 bg-primary rounded-full transition-transform mix-blend-difference"
+          className="fixed pointer-events-none z-[10000] w-4 h-4 bg-primary rounded-full transition-transform mix-blend-difference"
           style={{
             left: `${customCursor.x}px`,
             top: `${customCursor.y}px`,
             transform: "translate(-50%, -50%)",
           }}
-        />
+        />,
+        document.body
       )}
 
       {isLoading && (
@@ -817,24 +871,18 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {settings.showBackground && (
-          <div className="fixed inset-0 z-0">
-            <Image
-              src={backgroundImage || "/placeholder.svg"}
-              alt="Background"
-              fill
-              className="object-cover opacity-30"
-              priority
-            />
-          </div>
+        {settings.showBackground && mounted && (
+          <BackgroundSlideshow images={backgroundImages} />
         )}
 
         <div className="relative z-10 container mx-auto px-8 lg:px-16 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
             <div className="flex flex-col items-start space-y-6 lg:pr-8">
               <div className={`transition-opacity duration-700 ${avatarAnimating ? "opacity-0" : "opacity-100"}`}>
-                <div className="text-left relative">
-                  <TypewriterGreeting />
+                <div className="text-left relative" onDoubleClick={handleLock} title="Double click to lock">
+                  <div className="cursor-pointer">
+                     <TypewriterGreeting />
+                  </div>
                 </div>
 
                 <div className="w-full max-w-xs bg-muted/40 backdrop-blur-sm p-3 font-mono text-sm border border-border/30 rounded-lg mt-6 font-black">
@@ -888,24 +936,24 @@ export default function ProfilePage() {
                   <Card className="bg-card/30 backdrop-blur-xl border-border/50 p-6 rounded-lg shadow-2xl cursor-pointer hover:bg-card/40 transition-all">
                     <div className="text-center space-y-2">
                       <p className="text-muted-foreground text-sm font-semibold text-left" lang={language}>
-                        {formatDate(currentTime)}
+                        {currentTime ? formatDate(currentTime) : "..."}
                       </p>
                       <p className="text-5xl font-bold font-harmonyos-black tracking-wider text-left">
-                        {formatTime(currentTime)}
+                        {currentTime ? formatTime(currentTime) : "00:00:00"}
                       </p>
                       <p className="text-muted-foreground text-sm font-light text-right" lang={language}>
-                        {getTimeBasedGreeting()}
+                        {currentTime ? getTimeBasedGreeting() : "..."}
                       </p>
                     </div>
                   </Card>
                 }
               >
-                <DialogHeader>
-                  <DialogTitle className="text-2xl flex items-center gap-2">
+                <div className="flex flex-col gap-2 text-center sm:text-left">
+                  <h2 className="text-2xl flex items-center gap-2 font-semibold">
                     <Clock className="w-6 h-6" />
                     {t.worldClock}
-                  </DialogTitle>
-                </DialogHeader>
+                  </h2>
+                </div>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {worldClocks.map((clock) => (
                     <div key={clock.timezone} className="bg-muted/40 p-4 rounded-lg">
@@ -950,9 +998,9 @@ export default function ProfilePage() {
                   </Card>
                 }
               >
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">{t.weatherDetails}</DialogTitle>
-                </DialogHeader>
+                <div className="flex flex-col gap-2 text-center sm:text-left">
+                  <h2 className="text-2xl font-semibold">{t.weatherDetails}</h2>
+                </div>
                 {weather && (
                   <div className="space-y-6 mt-4">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1025,7 +1073,7 @@ export default function ProfilePage() {
                   key={hitokoto.hitokoto}
                   lang={hasKana ? "ja" : language}
                 >
-                  <p className="text-lg text-balance font-black text-left">
+                  <p className="text-lg text-balance font-serif font-black text-left">
                     "{language === "ja" ? toJapaneseNewForm(hitokoto.hitokoto) : hitokoto.hitokoto}"
                   </p>
                   <p className="text-sm text-muted-foreground font-bold text-right">
@@ -1265,13 +1313,13 @@ export default function ProfilePage() {
                         </label>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => window.open(backgroundImage, "_blank")}
+                            onClick={() => window.open(backgroundImages[0], "_blank")}
                             className="flex-1 px-3 py-2 bg-muted/40 hover:bg-accent/50 border border-border/50 rounded-lg text-sm transition-colors"
                           >
                             {language === "ja" ? "表示" : "View"}
                           </button>
                           <button
-                            onClick={downloadBackground}
+                            onClick={handleDownloadBackground}
                             className="flex-1 px-3 py-2 bg-muted/40 hover:bg-accent/50 border border-border/50 rounded-lg text-sm transition-colors flex items-center justify-center gap-1"
                           >
                             <Download className="w-4 h-4" />
@@ -1329,3 +1377,11 @@ export default function ProfilePage() {
     </>
   )
 }
+
+
+
+
+
+
+
+

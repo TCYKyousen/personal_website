@@ -1,6 +1,21 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@keyframes flip-in {
+  from {
+    transform: perspective(1000px) rotateX(-90deg);
+    opacity: 0;
+  }
+  to {
+    transform: perspective(1000px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-flip-in {
+  animation: flip-in 0.7s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

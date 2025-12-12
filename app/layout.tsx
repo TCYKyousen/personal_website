@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Ma_Shan_Zheng, ZCOOL_KuaiLe, Noto_Sans_JP, Noto_Sans_KR, Zen_Kurenaido, Nanum_Pen_Script } from "next/font/google"
 import "./globals.css"
 import localFont from "next/font/local"
+import { AppShell } from "@/components/app-shell"
+import { LockProvider } from "@/components/lock-provider"
 
 const miSansLatin = localFont({
   src: "../public/fonts/MiSans-Latin-VF.ttf",
@@ -75,7 +77,11 @@ export default function RootLayout({
       <body
         className={`${miSansLatin.variable} ${harmonyOSBlack.variable} ${maShanZheng.variable} ${zcoolKuaiLe.variable} ${notoSansJP.variable} ${notoSansKR.variable} ${zenKurenaido.variable} ${nanumPenScript.variable} font-sans antialiased`}
       >
-        {children}
+        <LockProvider>
+          <AppShell>
+            {children}
+          </AppShell>
+        </LockProvider>
         <Analytics />
       </body>
     </html>
